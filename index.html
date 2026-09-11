@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DATA QUEST: Petualangan Tree & Graph</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1; /* Indigo 500 */
+            --primary-dark: #4338ca; /* Indigo 700 */
+            --secondary: #10b981; /* Emerald 500 */
+            --secondary-dark: #047857; /* Emerald 700 */
+            --accent: #f59e0b; /* Amber 500 */
+            --text-color: #1e293b; /* Slate 800 */
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            /* Animated Gradient Background */
+            background: linear-gradient(-45deg, #0f172a, #312e81, #1e1b4b, #0f172a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6, .game-title {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 900px;
+            background: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        @media (min-width: 768px) {
+            #game-container {
+                min-height: 90vh;
+                height: 90vh;
+                border-radius: 2rem;
+                margin: 2rem;
+                border: 8px solid rgba(255, 255, 255, 0.1);
+                background-clip: padding-box;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .slide-up { animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .bounce-soft { animation: bounceSoft 2s infinite ease-in-out; }
+        .pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .float { animation: float 3s ease-in-out infinite; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes bounceSoft { 
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* 3D Button Style */
+        .btn-3d {
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .btn-3d:active {
+            transform: translateY(4px);
+            border-bottom-width: 0px !important;
+            margin-top: 4px;
+        }
+
+        .interactive-card {
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .interactive-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: var(--primary);
+        }
+
+        /* Glassmorphism HUD */
+        .glass-hud {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        /* Feedback Toast */
+        #feedback-toast {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 60;
+            display: none;
+            width: 85%;
+            max-width: 350px;
+        }
+        
+        .tree-node circle, .graph-node circle { transition: all 0.3s; }
+        .tree-node:hover circle, .graph-node:hover circle { filter: brightness(1.2); stroke-width: 4; }
+        .tree-line, .graph-edge { stroke: #cbd5e1; stroke-width: 5; stroke-linecap: round; transition: all 0.3s; }
+        .graph-edge:hover { stroke: #f59e0b; stroke-width: 7; cursor: pointer;}
+        
+        .hidden-el { display: none !important; }
+        
+        /* Folder Tree Styles */
+        .folder-item { 
+            cursor: pointer; 
+            padding: 10px 14px; 
+            border-radius: 12px; 
+            transition: all 0.2s; 
+            margin-left: 24px;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: #475569;
+        }
+        .folder-item:hover { background-color: #f1f5f9; transform: translateX(5px); color: #0f172a;}
+        .folder-root { margin-left: 0; font-weight: 800; color: #1e293b; font-size: 1.1rem;}
+        .folder-icon { font-size: 1.2rem; width: 30px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        
+        <!-- HUD (Heads Up Display) -->
+        <div id="hud" class="glass-hud p-4 hidden-el flex-col sm:flex-row justify-between items-center z-10 sticky top-0 shadow-sm">
+            <div class="flex items-center space-x-3 mb-3 sm:mb-0 w-full sm:w-auto">
+                <div class="bg-indigo-100 text-indigo-800 p-2 rounded-xl shadow-inner">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="flex-1 w-full max-w-[200px]">
+                    <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1" id="hud-level">Level 1</div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 shadow-inner">
+                        <div id="progress-bar" class="bg-gradient-to-r from-green-400 to-emerald-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex space-x-3 text-sm font-black w-full sm:w-auto justify-center sm:justify-end">
+                <div title="Experience Points" class="flex items-center bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200 shadow-sm">
+                    <span class="text-xl mr-1">⭐</span> <span id="hud-xp" class="text-blue-700 text-lg">0</span>
+                </div>
+                <div title="Lives" class="flex items-center bg-red-50 px-3 py-1.5 rounded-full border border-red-200 shadow-sm">
+                    <span class="text-xl mr-1">❤️</span> <span id="hud-lives" class="text-red-600 text-lg">3</span>
+                </div>
+                <div title="Badges" class="flex items-center bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-200 shadow-sm">
+                    <span class="text-xl mr-1">🏆</span> <span id="hud-badges" class="text-yellow-700 text-lg">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div id="game-content" class="flex-1 overflow-y-auto p-5 sm:p-8 relative bg-slate-50/50">
+            <!-- Screen content will be injected here via JS -->
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <div id="bottom-nav" class="bg-white p-4 border-t-2 border-gray-100 hidden-el flex justify-between items-center sticky bottom-0 z-10">
+            <button onclick="confirmRestart()" class="text-slate-400 hover:text-red-500 font-bold px-4 py-2 rounded-xl transition flex items-center group">
+                <i class="fas fa-redo mr-2 group-hover:-rotate-180 transition-transform duration-500"></i> Ulang
+            </button>
+            <button id="btn-next-global" onclick="goToNextState()" class="hidden-el btn-3d bg-gradient-to-b from-indigo-500 to-indigo-600 text-white font-bold py-3 px-8 rounded-2xl border-b-4 border-indigo-800 text-lg flex items-center">
+                LANJUT <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+
+        <!-- Custom Feedback Toast -->
+        <div id="feedback-toast" class="bg-white rounded-3xl shadow-2xl p-6 border-b-8 text-center flex flex-col items-center">
+            <div id="feedback-icon" class="text-6xl mb-2 -mt-12 bg-white rounded-full p-2 shadow-lg">✅</div>
+            <h3 id="feedback-title" class="text-2xl font-black mb-2 mt-2">Benar!</h3>
+            <p id="feedback-message" class="text-slate-600 mb-6 text-base font-medium leading-relaxed">Pesan di sini.</p>
+            <button id="feedback-btn" onclick="closeFeedback()" class="btn-3d bg-indigo-500 text-white px-8 py-3 rounded-2xl font-bold w-full border-b-4 border-indigo-700 text-lg tracking-wide">OK, Lanjut!</button>
+        </div>
+        
+        <!-- Restart Confirmation Modal -->
+        <div id="restart-modal" class="hidden-el absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex justify-center items-center z-50">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full mx-4 text-center border-b-8 border-red-500 pop">
+                <div class="text-6xl mb-4">⚠️</div>
+                <h3 class="text-2xl font-black mb-2 text-slate-800">Mulai Ulang?</h3>
+                <p class="mb-8 text-slate-600 font-medium">Semua progress, XP, dan badge akan hilang. Yakin ingin memulai dari awal?</p>
+                <div class="flex flex-col space-y-3">
+                    <button onclick="resetGame()" class="btn-3d w-full py-3 bg-red-500 text-white rounded-2xl font-bold border-b-4 border-red-700 text-lg">Ya, Mulai Ulang</button>
+                    <button onclick="closeRestartModal()" class="w-full py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GameState = {
+            HOME: 'HOME', BRIEFING: 'BRIEFING', LEVEL1: 'LEVEL1', LEVEL2: 'LEVEL2',
+            LEVEL3: 'LEVEL3', LEVEL4: 'LEVEL4', LEVEL5: 'LEVEL5', LEVEL6: 'LEVEL6',
+            FINAL_MISSION: 'FINAL_MISSION', FINAL_QUIZ: 'FINAL_QUIZ', RESULT: 'RESULT'
+        };
+
+        const state = {
+            currentState: GameState.HOME,
+            playerName: "", xp: 0, lives: 3, badges: [], progress: 0,
+            l1_completed: 0, l2_completed: 0, l3_completed: false, l4_completed: 0,
+            l5_completed: 0, l6_completed: 0, final_quiz_score: 0,
+            onFeedbackClose: null 
+        };
+
+        const totalLevels = 8;
+
+        const BADGES = {
+            BEGINNER: { id: 'beginner', name: 'Data Beginner', icon: '🌱', desc: 'Menyelesaikan Level 1' },
+            TREE: { id: 'tree', name: 'Tree Explorer', icon: '🌳', desc: 'Paham struktur Tree' },
+            GRAPH: { id: 'graph', name: 'Graph Navigator', icon: '🗺️', desc: 'Paham struktur Graph' },
+            SOLVER: { id: 'solver', name: 'Problem Solver', icon: '🧠', desc: 'Pintar cari jalan' },
+            MASTER: { id: 'master', name: 'Data Master', icon: '🏆', desc: 'Lulus semua misi!' }
+        };
+
+        function updateHUD() {
+            if(state.currentState === GameState.HOME || state.currentState === GameState.RESULT) {
+                document.getElementById('hud').classList.add('hidden-el');
+                document.getElementById('bottom-nav').classList.add('hidden-el');
+            } else {
+                document.getElementById('hud').classList.remove('hidden-el');
+                document.getElementById('bottom-nav').classList.remove('hidden-el');
+                
+                let levelName = ""; let prog = 0;
+                switch(state.currentState) {
+                    case GameState.BRIEFING: levelName = "Briefing"; prog = 5; break;
+                    case GameState.LEVEL1: levelName = "Level 1: Kenali Data"; prog = 15; break;
+                    case GameState.LEVEL2: levelName = "Level 2: Hutan Tree"; prog = 30; break;
+                    case GameState.LEVEL3: levelName = "Level 3: Labirin Tree"; prog = 45; break;
+                    case GameState.LEVEL4: levelName = "Level 4: Kota Graph"; prog = 60; break;
+                    case GameState.LEVEL5: levelName = "Level 5: Cari Rute"; prog = 70; break;
+                    case GameState.LEVEL6: levelName = "Level 6: Tree/Graph?"; prog = 80; break;
+                    case GameState.FINAL_MISSION: levelName = "Final Mission"; prog = 90; break;
+                    case GameState.FINAL_QUIZ: levelName = "Final Quiz"; prog = 95; break;
+                }
+                
+                document.getElementById('hud-level').innerText = levelName;
+                document.getElementById('progress-bar').style.width = prog + '%';
+                
+                // Animate value changes
+                animateValue('hud-xp', parseInt(document.getElementById('hud-xp').innerText), state.xp, 500);
+                document.getElementById('hud-lives').innerText = state.lives;
+                document.getElementById('hud-badges').innerText = state.badges.length;
+                
+                document.getElementById('btn-next-global').classList.add('hidden-el');
+            }
+        }
+
+        function animateValue(id, start, end, duration) {
+            if (start === end) return;
+            let range = end - start;
+            let current = start;
+            let increment = end > start ? 1 : -1;
+            let stepTime = Math.abs(Math.floor(duration / range));
+            let obj = document.getElementById(id);
+            let timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current;
+                if (current == end) {
+                    clearInterval(timer);
+                    obj.parentElement.classList.add('pop');
+                    setTimeout(() => obj.parentElement.classList.remove('pop'), 400);
+                }
+            }, stepTime);
+        }
+
+        function addXP(amount) {
+            state.xp += amount;
+            updateHUD();
+        }
+
+        function loseLife() {
+            state.lives--;
+            const livesEl = document.getElementById('hud-lives').parentElement;
+            livesEl.classList.add('pop', 'bg-red-200');
+            setTimeout(() => livesEl.classList.remove('pop', 'bg-red-200'), 500);
+
+            if (state.lives <= 0) {
+                showFeedback(false, "Oh tidak! Nyawamu habis. Kamu harus mengulang level ini.", "Game Over", () => {
+                    state.lives = 3; 
+                    renderCurrentState(); 
+                });
+            }
+        }
+
+        function awardBadge(badgeObj) {
+            if (!state.badges.some(b => b.id === badgeObj.id)) {
+                state.badges.push(badgeObj);
+                showFeedback(true, `<div class="text-4xl my-2">${badgeObj.icon}</div>Kamu mendapatkan badge: <br><strong>${badgeObj.name}</strong><br><span class="text-sm mt-1 block">${badgeObj.desc}</span>`, "🎉 BADGE BARU!", null);
+            }
+        }
+
+        function showFeedback(isCorrect, message, titleOverride = null, onDismiss = null) {
+            const toast = document.getElementById('feedback-toast');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const msg = document.getElementById('feedback-message');
+            const btn = document.getElementById('feedback-btn');
+
+            state.onFeedbackClose = onDismiss;
+
+            if (isCorrect) {
+                toast.className = "bg-white rounded-3xl shadow-2xl p-6 border-b-8 border-green-500 text-center flex flex-col items-center pop";
+                icon.innerHTML = "✅";
+                title.innerHTML = titleOverride || "Hebat!";
+                title.className = "text-3xl font-black mb-2 mt-2 text-green-600";
+                btn.className = "btn-3d bg-green-500 text-white px-8 py-3 rounded-2xl font-bold w-full border-b-4 border-green-700 text-lg";
+            } else {
+                toast.className = "bg-white rounded-3xl shadow-2xl p-6 border-b-8 border-red-500 text-center flex flex-col items-center pop";
+                icon.innerHTML = "❌";
+                title.innerHTML = titleOverride || "Belum Tepat";
+                title.className = "text-3xl font-black mb-2 mt-2 text-red-600";
+                btn.className = "btn-3d bg-red-500 text-white px-8 py-3 rounded-2xl font-bold w-full border-b-4 border-red-700 text-lg";
+            }
+
+            msg.innerHTML = message;
+            
+            const overlay = document.createElement('div');
+            overlay.id = 'toast-overlay';
+            overlay.className = 'absolute inset-0 bg-slate-900/40 backdrop-blur-sm z-50';
+            document.getElementById('game-container').appendChild(overlay);
+
+            toast.style.display = 'flex';
+        }
+
+        function closeFeedback() {
+            document.getElementById('feedback-toast').style.display = 'none';
+            const overlay = document.getElementById('toast-overlay');
+            if (overlay) overlay.remove();
+            
+            if (state.onFeedbackClose) {
+                const callback = state.onFeedbackClose;
+                state.onFeedbackClose = null;
+                callback();
+            }
+        }
+
+        function changeState(newState) {
+            state.currentState = newState;
+            renderCurrentState();
+        }
+
+        function goToNextState() {
+            const states = Object.values(GameState);
+            const currentIndex = states.indexOf(state.currentState);
+            if (currentIndex < states.length - 1) {
+                changeState(states[currentIndex + 1]);
+            }
+        }
+
+        function showNextButton() {
+            const btn = document.getElementById('btn-next-global');
+            btn.classList.remove('hidden-el');
+            btn.classList.add('pop');
+        }
+
+        function confirmRestart() { document.getElementById('restart-modal').classList.remove('hidden-el'); }
+        function closeRestartModal() { document.getElementById('restart-modal').classList.add('hidden-el'); }
+        function resetGame() {
+            closeRestartModal();
+            state.currentState = GameState.HOME;
+            state.xp = 0; state.lives = 3; state.badges = [];
+            state.l1_completed = 0; state.l2_completed = 0; state.l3_completed = false;
+            state.l4_completed = 0; state.l5_completed = 0; state.l6_completed = 0;
+            state.final_quiz_score = 0;
+            renderCurrentState();
+        }
+
+        function renderCurrentState() {
+            const container = document.getElementById('game-content');
+            container.innerHTML = ''; 
+            updateHUD();
+
+            switch(state.currentState) {
+                case GameState.HOME: renderHome(container); break;
+                case GameState.BRIEFING: renderBriefing(container); break;
+                case GameState.LEVEL1: renderLevel1(container); break;
+                case GameState.LEVEL2: renderLevel2(container); break;
+                case GameState.LEVEL3: renderLevel3(container); break;
+                case GameState.LEVEL4: renderLevel4(container); break;
+                case GameState.LEVEL5: renderLevel5(container); break;
+                case GameState.LEVEL6: renderLevel6(container); break;
+                case GameState.FINAL_MISSION: renderFinalMission(container); break;
+                case GameState.FINAL_QUIZ: renderFinalQuiz(container); break;
+                case GameState.RESULT: renderResult(container); break;
+            }
+            document.getElementById('game-container').scrollTop = 0;
+        }
+
+        function renderHome(container) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center min-h-[80vh] text-center fade-in py-10">
+                    
+                    <div class="relative mb-10 float">
+                        <div class="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 rounded-full"></div>
+                        <div class="relative flex justify-center items-center space-x-4">
+                            <div class="bg-white p-4 rounded-3xl shadow-xl transform -rotate-12 border-4 border-indigo-100 text-5xl">🌳</div>
+                            <div class="bg-white p-4 rounded-3xl shadow-xl transform rotate-12 border-4 border-pink-100 text-5xl z-10">🗺️</div>
+                        </div>
+                    </div>
+
+                    <h1 class="text-6xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 game-title bounce-soft tracking-tight drop-shadow-sm">
+                        DATA QUEST
+                    </h1>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-700 mt-4 mb-8 bg-white/50 inline-block px-6 py-2 rounded-full backdrop-blur-sm border border-white">
+                        Petualangan Tree & Graph
+                    </h2>
+                    
+                    <div class="bg-slate-800 text-white p-5 rounded-3xl mb-10 max-w-md w-full shadow-2xl relative border-b-4 border-slate-900">
+                        <div class="absolute -top-4 -right-4 text-4xl pop">✨</div>
+                        <p class="text-lg font-bold">"Susun data. Temukan jalur. Pecahkan masalah!"</p>
+                    </div>
+
+                    <div class="mb-10 w-full max-w-sm group">
+                        <input type="text" id="player-name-input" placeholder="Masukkan Namamu..." class="w-full px-6 py-4 rounded-2xl border-4 border-indigo-100 focus:border-indigo-500 focus:outline-none text-center text-xl font-bold bg-white/80 backdrop-blur-sm transition-all group-hover:shadow-lg text-slate-700 placeholder-slate-400">
+                    </div>
+
+                    <button onclick="startGame()" class="btn-3d bg-gradient-to-b from-indigo-400 to-indigo-600 text-white font-black py-5 px-12 rounded-3xl text-2xl shadow-xl border-b-[6px] border-indigo-800 flex items-center transform hover:scale-105">
+                        <i class="fas fa-play mr-4 text-3xl"></i> MULAI MAIN
+                    </button>
+                    
+                </div>
+            `;
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('player-name-input').value.trim();
+            state.playerName = nameInput || "Explorer";
+            changeState(GameState.BRIEFING);
+        }
+
+        function renderBriefing(container) {
+            container.innerHTML = `
+                <div class="max-w-2xl mx-auto mt-4 slide-up">
+                    <div class="bg-white rounded-[2rem] p-8 sm:p-10 shadow-xl border-2 border-slate-100 relative mt-12">
+                        <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gradient-to-b from-indigo-400 to-indigo-600 text-white w-24 h-24 rounded-full flex items-center justify-center border-4 border-white shadow-lg text-5xl z-10 float">
+                            🧑‍💻
+                        </div>
+                        
+                        <div class="text-center mt-12 mb-8">
+                            <span class="bg-slate-100 text-slate-500 font-bold px-4 py-1 rounded-full text-sm uppercase tracking-wider">Pesan Masuk</span>
+                            <h2 class="text-4xl font-black text-slate-800 mt-4">Briefing Misi</h2>
+                        </div>
+                        
+                        <div class="text-lg text-slate-600 space-y-6 font-medium leading-relaxed">
+                            <p class="text-center text-xl">Halo, <strong class="text-indigo-600">${state.playerName}</strong>! Selamat datang di markas <span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-lg">Data Explorer</span>.</p>
+                            
+                            <div class="bg-slate-50 p-6 rounded-2xl border-l-4 border-indigo-500">
+                                <p>Dunia digital menyimpan banyak sekali data. Agar tidak berantakan dan mudah dicari, data harus disusun dengan struktur yang tepat.</p>
+                            </div>
+
+                            <p class="text-center">Dalam petualangan ini, kamu akan menguasai dua jurus andalan:</p>
+                            
+                            <div class="flex flex-col sm:flex-row justify-center items-center gap-6 py-2">
+                                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex-1 w-full text-center hover:scale-105 transition">
+                                    <div class="text-5xl mb-3">🌳</div>
+                                    <span class="font-black text-emerald-600 text-xl block">TREE</span>
+                                    <span class="text-sm text-slate-500">Struktur Bertingkat</span>
+                                </div>
+                                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex-1 w-full text-center hover:scale-105 transition">
+                                    <div class="text-5xl mb-3">🗺️</div>
+                                    <span class="font-black text-pink-600 text-xl block">GRAPH</span>
+                                    <span class="text-sm text-slate-500">Jaringan Terhubung</span>
+                                </div>
+                            </div>
+
+                            <p class="text-center font-bold text-slate-700 bg-yellow-50 p-4 rounded-xl border border-yellow-200">Kumpulkan XP dan selesaikan semua tantangan untuk menjadi DATA MASTER!</p>
+                        </div>
+
+                        <div class="text-center mt-10">
+                            <button onclick="goToNextState()" class="btn-3d bg-indigo-500 text-white font-black py-4 px-10 rounded-2xl text-xl border-b-4 border-indigo-700 w-full sm:w-auto">
+                                🚀 TERIMA MISI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLevel1(container) {
+            const dataExamples = [
+                { id: 1, text: "Daftar hadir siswa", icon: "📋", isStructured: true, reason: "Daftar hadir memiliki pola baris/kolom (terstruktur)." },
+                { id: 2, text: "Tumpukan kertas acak", icon: "🗑️", isStructured: false, reason: "Data ini berantakan dan sulit dicari." },
+                { id: 3, text: "Struktur organisasi", icon: "📊", isStructured: true, reason: "Sangat terstruktur! Ini adalah contoh Tree." },
+                { id: 4, text: "Peta rute angkot", icon: "🗺️", isStructured: true, reason: "Terstruktur! Ini contoh jaringan (Graph)." },
+                { id: 5, text: "Pikiran saat melamun", icon: "💭", isStructured: false, reason: "Abstrak dan tidak memiliki pola yang jelas." }
+            ];
+
+            state.l1_completed = 0;
+
+            let html = `
+                <div class="max-w-4xl mx-auto slide-up pb-10">
+                    <div class="text-center mb-8">
+                        <span class="bg-indigo-100 text-indigo-700 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wider">Level 1</span>
+                        <h2 class="text-3xl sm:text-4xl font-black text-slate-800 mt-4">🔎 Kenali Data</h2>
+                    </div>
+
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl mb-8 shadow-sm border-2 border-indigo-50 text-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-2 bg-indigo-500"></div>
+                        <p class="text-lg text-slate-600 mb-4 font-medium">Struktur data adalah cara mengatur data agar mudah dicari dan digunakan.</p>
+                        <div class="bg-indigo-50 p-4 rounded-2xl inline-block border border-indigo-100">
+                            <p class="font-black text-indigo-800">🎯 TANTANGAN:</p>
+                            <p class="text-indigo-600 font-medium">Klik 3 kartu yang merupakan contoh data TERSUSUN (Terstruktur).</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="l1-cards">
+            `;
+
+            dataExamples.forEach(item => {
+                html += `
+                    <div onclick="checkLevel1(${item.id}, ${item.isStructured}, '${item.reason}', this)" class="interactive-card bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm flex flex-col justify-center items-center text-center min-h-[140px] relative overflow-hidden">
+                        <div class="text-4xl mb-3">${item.icon}</div>
+                        <span class="text-lg font-bold text-slate-700 leading-tight">${item.text}</span>
+                        <div class="check-overlay hidden-el absolute inset-0 bg-green-500/90 flex items-center justify-center text-white text-5xl backdrop-blur-sm">
+                            ✅
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function checkLevel1(id, isStructured, reason, el) {
+            if (el.classList.contains('locked')) return; 
+
+            if (isStructured) {
+                el.classList.add('locked', 'border-green-500', 'ring-4', 'ring-green-200');
+                el.querySelector('.check-overlay').classList.remove('hidden-el');
+                el.querySelector('.check-overlay').classList.add('pop');
+                
+                addXP(10);
+                state.l1_completed++;
+                
+                if (state.l1_completed === 3) {
+                    showFeedback(true, reason + "<br><br><strong>Hebat! Kamu sudah bisa mengenali data yang terstruktur.</strong>", "Level 1 Selesai!", () => {
+                        awardBadge(BADGES.BEGINNER);
+                        showNextButton();
+                    });
+                } else {
+                    showFeedback(true, reason, "Tepat Sekali!");
+                }
+            } else {
+                loseLife();
+                if (state.lives > 0) {
+                    showFeedback(false, reason + "<br>Cari yang datanya punya pola atau terhubung jelas.", "Bukan Data Terstruktur");
+                }
+            }
+        }
+
+        function renderLevel2(container) {
+            state.l2_completed = 0;
+            const targetParts = ['ROOT', 'PARENT', 'CHILD', 'LEAF'];
+            
+            const html = `
+                <div class="max-w-4xl mx-auto slide-up pb-10">
+                    <div class="text-center mb-6">
+                        <span class="bg-emerald-100 text-emerald-800 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wider">Level 2</span>
+                        <h2 class="text-3xl sm:text-4xl font-black text-slate-800 mt-4">🌳 Hutan Tree</h2>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-3xl mb-8 shadow-sm border-2 border-emerald-50 text-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-2 bg-emerald-500"></div>
+                        <p class="text-lg font-medium text-slate-600 mb-6"><strong>Tree (Pohon)</strong> menggambarkan data yang <strong>bertingkat/hierarki</strong>, seperti silsilah keluarga.</p>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-center">
+                            <div class="bg-slate-50 p-3 rounded-2xl border-t-4 border-red-500 shadow-sm">
+                                <strong class="text-red-600 block mb-1">Root (Akar)</strong>Simpul paling atas
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-2xl border-t-4 border-blue-500 shadow-sm">
+                                <strong class="text-blue-600 block mb-1">Parent (Induk)</strong>Simpul yang punya cabang
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-2xl border-t-4 border-yellow-500 shadow-sm">
+                                <strong class="text-yellow-600 block mb-1">Child (Anak)</strong>Simpul turunan
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-2xl border-t-4 border-green-500 shadow-sm">
+                                <strong class="text-green-600 block mb-1">Leaf (Daun)</strong>Simpul paling bawah
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-lg border border-slate-100 text-center relative">
+                        <h3 class="text-xl font-bold mb-4 text-slate-700">Misi: Klik bagian yang diminta!</h3>
+                        <div id="l2-instruction" class="text-2xl font-black text-white bg-emerald-500 inline-block px-8 py-3 rounded-full bounce-soft shadow-lg border-2 border-emerald-400 mb-8 transition-all">
+                            Temukan: ROOT
+                        </div>
+                        
+                        <div class="relative w-full max-w-lg mx-auto overflow-x-auto bg-slate-50 rounded-[2rem] p-4 border-2 border-slate-100">
+                            <svg viewBox="0 0 400 300" class="w-full h-auto min-w-[300px]">
+                                <defs>
+                                    <radialGradient id="redGlow" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#ef4444" />
+                                        <stop offset="100%" stop-color="#b91c1c" />
+                                    </radialGradient>
+                                    <radialGradient id="blueGlow" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#3b82f6" />
+                                        <stop offset="100%" stop-color="#1d4ed8" />
+                                    </radialGradient>
+                                    <radialGradient id="greenGlow" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#10b981" />
+                                        <stop offset="100%" stop-color="#047857" />
+                                    </radialGradient>
+                                    <radialGradient id="yellowHighlight" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#fbbf24" />
+                                        <stop offset="100%" stop-color="#d97706" />
+                                    </radialGradient>
+                                </defs>
+
+                                <!-- Lines (Edges) -->
+                                <line x1="200" y1="50" x2="100" y2="140" class="tree-line" />
+                                <line x1="200" y1="50" x2="300" y2="140" class="tree-line" />
+                                <line x1="100" y1="140" x2="50" y2="230" class="tree-line" />
+                                <line x1="100" y1="140" x2="150" y2="230" class="tree-line" />
+                                <line x1="300" y1="140" x2="250" y2="230" class="tree-line" />
+                                <line x1="300" y1="140" x2="350" y2="230" class="tree-line" />
+
+                                <!-- Nodes -->
+                                <!-- Root -->
+                                <g onclick="checkTreeClick('ROOT', this)" class="tree-node cursor-pointer">
+                                    <circle cx="200" cy="50" r="30" fill="url(#redGlow)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                                    <text x="200" y="55" text-anchor="middle" fill="white" font-weight="900" font-size="14" font-family="Nunito">Sekolah</text>
+                                </g>
+
+                                <!-- Parents / Children -->
+                                <g onclick="checkTreeClick('PARENT_CHILD', this)" class="tree-node cursor-pointer">
+                                    <circle cx="100" cy="140" r="28" fill="url(#blueGlow)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                                    <text x="100" y="145" text-anchor="middle" fill="white" font-weight="900" font-size="14" font-family="Nunito">Kls 9</text>
+                                </g>
+                                <g onclick="checkTreeClick('PARENT_CHILD', this)" class="tree-node cursor-pointer">
+                                    <circle cx="300" cy="140" r="28" fill="url(#blueGlow)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                                    <text x="300" y="145" text-anchor="middle" fill="white" font-weight="900" font-size="14" font-family="Nunito">Kls 8</text>
+                                </g>
+
+                                <!-- Leaves -->
+                                <g onclick="checkTreeClick('LEAF_CHILD', this)" class="tree-node cursor-pointer">
+                                    <circle cx="50" cy="230" r="24" fill="url(#greenGlow)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                                    <text x="50" y="235" text-anchor="middle" fill="white" font-weight="900" font-size="12" font-family="Nunito">9A</text>
+                                </g>
+                                <g onclick="checkTreeClick('LEAF_CHILD', this)" class="tree-node cursor-pointer">
+                                    <circle cx="150" cy="230" r="24" fill="url(#greenGlow)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                                    <text x="150" y="235" text-anchor="middle" fill="white" font-weight="900" font-size="12" font-family="Nunito">9B</text>
+                                </g>
+                                <g onclick="checkTreeClick('LEAF_CHILD', this)" class="tree-node cursor-pointer">
+                                    <circle cx="250" cy="230" r="24" fill="url(#greenGlow)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                                    <text x="250" y="235" text-anchor="middle" fill="white" font-weight="900" font-size="12" font-family="Nunito">8A</text>
+                                </g>
+                                <g onclick="checkTreeClick('LEAF_CHILD', this)" class="tree-node cursor-pointer">
+                                    <circle cx="350" cy="230" r="24" fill="url(#greenGlow)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                                    <text x="350" y="235" text-anchor="middle" fill="white" font-weight="900" font-size="12" font-family="Nunito">8B</text>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+            window.l2_targetParts = targetParts;
+            window.l2_currentTargetIndex = 0;
+        }
+
+        function checkTreeClick(nodeType, el) {
+            const target = window.l2_targetParts[window.l2_currentTargetIndex];
+            let isCorrect = false;
+
+            if (target === 'ROOT' && nodeType === 'ROOT') isCorrect = true;
+            if (target === 'PARENT' && (nodeType === 'ROOT' || nodeType === 'PARENT_CHILD')) isCorrect = true; 
+            if (target === 'CHILD' && (nodeType === 'PARENT_CHILD' || nodeType === 'LEAF_CHILD')) isCorrect = true;
+            if (target === 'LEAF' && nodeType === 'LEAF_CHILD') isCorrect = true;
+
+            if (isCorrect) {
+                const circle = el.querySelector('circle');
+                const origFill = circle.getAttribute('fill');
+                circle.setAttribute('fill', 'url(#yellowHighlight)'); 
+                
+                addXP(10);
+                window.l2_currentTargetIndex++;
+
+                if (window.l2_currentTargetIndex >= window.l2_targetParts.length) {
+                    showFeedback(true, "Luar biasa! Kamu sudah menguasai anatomi struktur Tree.", "Misi Selesai!", () => {
+                        awardBadge(BADGES.TREE);
+                        showNextButton();
+                    });
+                } else {
+                    showFeedback(true, `Benar sekali! Itu adalah contoh ${target}.`, "Tepat!", () => {
+                        circle.setAttribute('fill', origFill); 
+                        
+                        const instr = document.getElementById('l2-instruction');
+                        instr.innerText = `Temukan: ${window.l2_targetParts[window.l2_currentTargetIndex]}`;
+                        instr.classList.remove('pop');
+                        void instr.offsetWidth; // trigger reflow
+                        instr.classList.add('pop');
+                    });
+                }
+            } else {
+                loseLife();
+                if (state.lives > 0) {
+                    let hint = "";
+                    if(target === 'ROOT') hint = "Cari simpul paling atas.";
+                    if(target === 'PARENT') hint = "Cari simpul yang memiliki cabang di bawahnya.";
+                    if(target === 'CHILD') hint = "Cari simpul yang berasal dari simpul di atasnya.";
+                    if(target === 'LEAF') hint = "Cari simpul paling ujung bawah (tanpa cabang).";
+                    showFeedback(false, "Coba lagi!<br><br><span class='text-sm bg-yellow-100 px-3 py-1 rounded text-yellow-800 font-bold'>Petunjuk: " + hint + "</span>");
+                }
+            }
+        }
+
+        function renderLevel3(container) {
+            state.l3_completed = false;
+            
+            const html = `
+                <div class="max-w-4xl mx-auto slide-up pb-10">
+                    <div class="text-center mb-6">
+                        <span class="bg-emerald-100 text-emerald-800 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wider">Level 3</span>
+                        <h2 class="text-3xl sm:text-4xl font-black text-slate-800 mt-4">🧩 Labirin Tree</h2>
+                    </div>
+
+                    <div class="bg-indigo-900 text-white p-6 sm:p-8 rounded-[2rem] mb-8 shadow-xl flex flex-col md:flex-row items-center gap-6 relative overflow-hidden">
+                        <div class="absolute -right-10 -bottom-10 text-9xl opacity-10">📁</div>
+                        <div class="text-6xl float">📁</div>
+                        <div class="z-10">
+                            <h3 class="text-2xl font-black text-yellow-400 mb-2">Misi Pencarian File!</h3>
+                            <p class="text-indigo-100 mb-4 font-medium text-lg">Sistem folder di komputermu adalah contoh nyata struktur Tree. Temukan file:</p>
+                            <div class="bg-indigo-950 px-4 py-3 rounded-xl border border-indigo-500 font-mono text-indigo-300 font-bold inline-block shadow-inner">
+                                <i class="fas fa-file-word mr-2 text-blue-400"></i> Tugas-Tree.docx
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-lg border-2 border-slate-200">
+                        <!-- Root -->
+                        <div class="folder-root mb-4 pb-4 border-b-2 border-slate-100 flex items-center">
+                            <i class="fas fa-hdd text-slate-400 text-2xl mr-3"></i> Local Disk (C:)
+                        </div>
+                        
+                        <!-- Level 1 -->
+                        <div class="ml-4 border-l-4 border-slate-200 pl-4 space-y-2">
+                            <div class="folder-item group" onclick="handleFolderClick('Dokumen', this)">
+                                <div class="folder-icon"><i class="fas fa-folder text-yellow-400 group-hover:text-yellow-500"></i></div> Dokumen
+                            </div>
+                            
+                            <!-- Level 2 -->
+                            <div id="sub-dokumen" class="hidden-el ml-8 border-l-4 border-slate-200 pl-4 space-y-2 mt-2 mb-4">
+                                <div class="folder-item group" onclick="handleFolderClick('Informatika', this)">
+                                    <div class="folder-icon"><i class="fas fa-folder text-yellow-400"></i></div> Informatika
+                                </div>
+                                
+                                <!-- Level 3 -->
+                                <div id="sub-infor" class="hidden-el ml-8 border-l-4 border-slate-200 pl-4 space-y-2 mt-2 mb-4">
+                                    <div class="folder-item group" onclick="handleFolderClick('Tugas', this)">
+                                        <div class="folder-icon"><i class="fas fa-folder text-yellow-400"></i></div> Tugas
+                                    </div>
+                                    
+                                    <!-- Level 4 (Files) -->
+                                    <div id="sub-tugas" class="hidden-el ml-8 border-l-4 border-slate-200 pl-4 space-y-2 mt-2 mb-4">
+                                        <div class="folder-item bg-white border border-slate-100 hover:border-blue-300 shadow-sm" onclick="handleFolderClick('Tugas-Tree.docx', this)">
+                                            <div class="folder-icon"><i class="fas fa-file-word text-blue-500"></i></div> Tugas-Tree.docx
+                                        </div>
+                                        <div class="folder-item bg-white border border-slate-100 hover:border-blue-300 shadow-sm" onclick="handleFolderClick('Salah.docx', this)">
+                                            <div class="folder-icon"><i class="fas fa-file-word text-blue-500"></i></div> Catatan.docx
+                                        </div>
+                                    </div>
+
+                                    <div class="folder-item bg-white border border-slate-100 shadow-sm" onclick="handleFolderClick('Materi.pdf', this)">
+                                        <div class="folder-icon"><i class="fas fa-file-pdf text-red-500"></i></div> Materi.pdf
+                                    </div>
+                                </div>
+
+                                <div class="folder-item group" onclick="handleFolderClick('Matematika', this)">
+                                    <div class="folder-icon"><i class="fas fa-folder text-yellow-400"></i></div> Matematika
+                                </div>
+                            </div>
+                            
+                            <div class="folder-item group" onclick="handleFolderClick('Downloads', this)">
+                                <div class="folder-icon"><i class="fas fa-folder text-yellow-400"></i></div> Downloads
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+            window.l3_currentPath = [];
+            window.l3_targetPath = ['Dokumen', 'Informatika', 'Tugas', 'Tugas-Tree.docx'];
+        }
+
+        function handleFolderClick(itemName, el) {
+            const expectedNext = window.l3_targetPath[window.l3_currentPath.length];
+
+            if (itemName === expectedNext) {
+                window.l3_currentPath.push(itemName);
+                el.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
+                
+                if (itemName === 'Dokumen') document.getElementById('sub-dokumen').classList.remove('hidden-el');
+                if (itemName === 'Informatika') document.getElementById('sub-infor').classList.remove('hidden-el');
+                if (itemName === 'Tugas') document.getElementById('sub-tugas').classList.remove('hidden-el');
+
+                if (itemName === 'Tugas-Tree.docx') {
+                    addXP(20);
+                    showFeedback(true, "File ditemukan! Struktur folder mempermudah pencarian karena jalur hirarkinya jelas.", "Misi Selesai!", () => {
+                        showNextButton();
+                    });
+                }
+            } else {
+                loseLife();
+                if(state.lives > 0){
+                    showFeedback(false, "Bukan di sini! Ingat, kamu mencari file Tugas Informatika.", "Jalur Salah");
+                }
+            }
+        }
+
+        function renderLevel4(container) {
+            state.l4_completed = 0;
+            const targetParts = ['NODE', 'EDGE', 'NODE', 'EDGE'];
+            window.l4_currentTargetIndex = 0;
+            window.l4_targetParts = targetParts;
+
+            const html = `
+                <div class="max-w-4xl mx-auto slide-up pb-10">
+                    <div class="text-center mb-6">
+                        <span class="bg-pink-100 text-pink-800 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wider">Level 4</span>
+                        <h2 class="text-3xl sm:text-4xl font-black text-slate-800 mt-4">🗺️ Kota Graph</h2>
+                    </div>
+
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl mb-8 shadow-sm border-2 border-pink-50 text-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-2 bg-pink-500"></div>
+                        <p class="text-lg text-slate-600 mb-6 font-medium"><strong>Graph</strong> merepresentasikan objek yang <strong>saling terhubung (jaringan)</strong> tanpa hierarki atas/bawah. Contoh: Peta jalan.</p>
+                        
+                        <div class="flex flex-col sm:flex-row justify-center gap-6">
+                            <div class="bg-slate-50 p-5 rounded-2xl shadow-sm border border-slate-200 flex-1 flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-md mb-3"></div>
+                                <strong class="text-lg text-slate-800">Node (Simpul)</strong>
+                                <span class="text-sm text-slate-500 mt-1">Titik Lokasi / Objek</span>
+                            </div>
+                            <div class="bg-slate-50 p-5 rounded-2xl shadow-sm border border-slate-200 flex-1 flex flex-col items-center">
+                                <div class="w-20 h-3 bg-slate-300 rounded-full mb-3 mt-4"></div>
+                                <strong class="text-lg text-slate-800">Edge (Ruas)</strong>
+                                <span class="text-sm text-slate-500 mt-1">Jalur Penghubung</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-lg border border-slate-100 text-center relative">
+                        <h3 class="text-xl font-bold mb-4 text-slate-700">Misi: Klik bagian yang diminta!</h3>
+                        <div id="l4-instruction" class="text-2xl font-black text-white bg-pink-500 inline-block px-8 py-3 rounded-full bounce-soft shadow-lg border-2 border-pink-400 mb-8 transition-all">
+                            Temukan: NODE
+                        </div>
+                        
+                        <div class="relative w-full max-w-lg mx-auto overflow-x-auto bg-slate-50 rounded-[2rem] p-4 border-2 border-slate-100">
+                            <svg viewBox="0 0 400 300" class="w-full h-auto min-w-[300px]">
+                                <defs>
+                                    <radialGradient id="nodeBlue" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#60a5fa" />
+                                        <stop offset="100%" stop-color="#2563eb" />
+                                    </radialGradient>
+                                    <radialGradient id="nodeGreen" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#34d399" />
+                                        <stop offset="100%" stop-color="#059669" />
+                                    </radialGradient>
+                                    <radialGradient id="nodePurple" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#a78bfa" />
+                                        <stop offset="100%" stop-color="#7c3aed" />
+                                    </radialGradient>
+                                    <radialGradient id="nodeRed" cx="50%" cy="50%" r="50%">
+                                        <stop offset="0%" stop-color="#f87171" />
+                                        <stop offset="100%" stop-color="#dc2626" />
+                                    </radialGradient>
+                                </defs>
+
+                                <!-- Edges (Interactive transparent thick lines over visible lines for easier clicking) -->
+                                <g onclick="checkGraphClick('EDGE', this)" class="graph-edge-group group cursor-pointer">
+                                    <line x1="100" y1="150" x2="200" y2="70" class="graph-edge" />
+                                    <line x1="100" y1="150" x2="200" y2="70" stroke="transparent" stroke-width="20" />
+                                </g>
+                                <g onclick="checkGraphClick('EDGE', this)" class="graph-edge-group group cursor-pointer">
+                                    <line x1="200" y1="70" x2="300" y2="150" class="graph-edge" />
+                                    <line x1="200" y1="70" x2="300" y2="150" stroke="transparent" stroke-width="20" />
+                                </g>
+                                <g onclick="checkGraphClick('EDGE', this)" class="graph-edge-group group cursor-pointer">
+                                    <line x1="100" y1="150" x2="200" y2="230" class="graph-edge" />
+                                    <line x1="100" y1="150" x2="200" y2="230" stroke="transparent" stroke-width="20" />
+                                </g>
+                                <g onclick="checkGraphClick('EDGE', this)" class="graph-edge-group group cursor-pointer">
+                                    <line x1="200" y1="230" x2="300" y2="150" class="graph-edge" />
+                                    <line x1="200" y1="230" x2="300" y2="150" stroke="transparent" stroke-width="20" />
+                                </g>
+                                <g onclick="checkGraphClick('EDGE', this)" class="graph-edge-group group cursor-pointer">
+                                    <line x1="100" y1="150" x2="300" y2="150" stroke="#cbd5e1" stroke-width="5" stroke-dasharray="8,8" />
+                                    <line x1="100" y1="150" x2="300" y2="150" stroke="transparent" stroke-width="20" />
+                                </g>
+
+                                <!-- Nodes -->
+                                <g onclick="checkGraphClick('NODE', this)" class="graph-node cursor-pointer">
+                                    <circle cx="100" cy="150" r="30" fill="url(#nodeBlue)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))" />
+                                    <text x="100" y="155" text-anchor="middle" fill="white" font-weight="900" font-family="Nunito">Rumah</text>
+                                </g>
+                                <g onclick="checkGraphClick('NODE', this)" class="graph-node cursor-pointer">
+                                    <circle cx="200" cy="70" r="30" fill="url(#nodeGreen)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                                    <text x="200" y="75" text-anchor="middle" fill="white" font-weight="900" font-family="Nunito">Toko</text>
+                                </g>
+                                <g onclick="checkGraphClick('NODE', this)" class="graph-node cursor-pointer">
+                                    <circle cx="200" cy="230" r="30" fill="url(#nodePurple)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                                    <text x="200" y="235" text-anchor="middle" fill="white" font-weight="900" font-family="Nunito">Taman</text>
+                                </g>
+                                <g onclick="checkGraphClick('NODE', this)" class="graph-node cursor-pointer">
+                                    <circle cx="300" cy="150" r="30" fill="url(#nodeRed)" stroke="#fff" stroke-width="3" filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))"/>
+                                    <text x="300" y="155" text-anchor="middle" fill="white" font-weight="900" font-family="Nunito">Sekolah</text>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function checkGraphClick(clickedType, el) {
+            const target = window.l4_targetParts[window.l4_currentTargetIndex];
+
+            if (clickedType === target) {
+                if (clickedType === 'NODE') {
+                    el.querySelector('circle').setAttribute('fill', 'url(#yellowHighlight)');
+                } else {
+                    const line = el.querySelector('line');
+                    line.setAttribute('stroke', '#fbbf24');
+                    line.setAttribute('stroke-dasharray', '');
+                }
+
+                addXP(10);
+                window.l4_currentTargetIndex++;
+
+                if (window.l4_currentTargetIndex >= window.l4_targetParts.length) {
+                    showFeedback(true, "Kerja bagus! Kamu sudah memahami anatomi dasar struktur Graph.", "Misi Selesai!", () => {
+                        awardBadge(BADGES.GRAPH);
+                        showNextButton();
+                    });
+                } else {
+                    showFeedback(true, `Benar! Itu adalah ${target}.`, "Tepat!", () => {
+                        // Keep it yellow for a moment then could reset, but leaving it is fine for visual progress.
+                        const instr = document.getElementById('l4-instruction');
+                        instr.innerText = `Temukan: ${window.l4_targetParts[window.l4_currentTargetIndex]}`;
+                        instr.classList.remove('pop');
+                        void instr.offsetWidth;
+                        instr.classList.add('pop');
+                    });
+                }
+            } else {
+                loseLife();
+                if (state.lives > 0) {
+                    let hint = target === 'NODE' ? "Klik pada lingkaran (lokasi)." : "Klik pada garis (jalur).";
+                    showFeedback(false, `Kamu mengklik ${clickedType}. Yang diminta adalah <strong>${target}</strong>.<br><br><span class='text-sm bg-yellow-100 px-3 py-1 rounded text-yellow-800 font-bold'>Petunjuk: ${hint}</span>`);
+                }
+            }
+        }
+
+        function renderLevel5(container) {
+            const html = `
+                <div class="max-w-4xl mx-auto slide-up pb-10">
+                    <div class="text-center mb-6">
+                        <span class="bg-amber-100 text-amber-800 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wider">Level 5</span>
+                        <h2 class="text-3xl sm:text-4xl font-black text-slate-800 mt-4">🚗 Cari Rute</h2>
+                    </div>
+
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-lg mb-6 border border-slate-100 relative">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-amber-100 rounded-bl-full -z-10"></div>
+                        <p class="text-lg font-medium mb-6 text-center text-slate-600">Angka pada garis menunjukkan <strong>jarak (km)</strong>.</p>
+                        
+                        <div class="relative w-full max-w-lg mx-auto mb-8 bg-slate-800 rounded-[2rem] p-4 shadow-xl border-4 border-slate-700">
+                            <svg viewBox="0 0 400 250" class="w-full h-auto">
+                                <!-- Edges -->
+                                <line x1="50" y1="125" x2="200" y2="50" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+                                <line x1="200" y1="50" x2="350" y2="125" stroke="#475569" stroke-width="6" stroke-linecap="round"/>
+                                <line x1="50" y1="125" x2="200" y2="200" stroke="#475569" stroke-width="6" stroke-linecap="round"/>
+                                <line x1="200" y1="200" x2="350" y2="125" stroke="#475569" stroke-width="6" stroke-linecap="round"/>
+                                <line x1="50" y1="125" x2="350" y2="125" stroke="#475569" stroke-width="6" stroke-dasharray="10,10" stroke-linecap="round"/> 
+
+                                <!-- Labels -->
+                                <g transform="translate(125, 75)">
+                                    <rect x="-15" y="-12" width="30" height="24" fill="#f59e0b" rx="8" />
+                                    <text x="0" y="4" text-anchor="middle" font-weight="900" fill="white" font-size="14">4</text>
+                                </g>
+                                <g transform="translate(275, 75)">
+                                    <rect x="-15" y="-12" width="30" height="24" fill="#f59e0b" rx="8" />
+                                    <text x="0" y="4" text-anchor="middle" font-weight="900" fill="white" font-size="14">3</text>
+                                </g>
+                                <g transform="translate(125, 175)">
+                                    <rect x="-15" y="-12" width="30" height="24" fill="#f59e0b" rx="8" />
+                                    <text x="0" y="4" text-anchor="middle" font-weight="900" fill="white" font-size="14">2</text>
+                                </g>
+                                <g transform="translate(275, 175)">
+                                    <rect x="-15" y="-12" width="30" height="24" fill="#f59e0b" rx="8" />
+                                    <text x="0" y="4" text-anchor="middle" font-weight="900" fill="white" font-size="14">6</text>
+                                </g>
+                                <g transform="translate(200, 125)">
+                                    <rect x="-15" y="-12" width="30" height="24" fill="#ef4444" rx="8" />
+                                    <text x="0" y="4" text-anchor="middle" font-weight="900" fill="white" font-size="14">9</text>
+                                </g>
+
+                                <!-- Nodes -->
+                                <circle cx="50" cy="125" r="24" fill="#3b82f6" stroke="#fff" stroke-width="4"/>
+                                <text x="50" y="131" text-anchor="middle" fill="white" font-weight="black" font-size="16">A</text>
+                                <text x="50" y="165" text-anchor="middle" font-size="12" font-weight="bold" fill="#94a3b8">Rumah</text>
+
+                                <circle cx="200" cy="50" r="20" fill="#94a3b8" stroke="#fff" stroke-width="3"/>
+                                <text x="200" y="55" text-anchor="middle" fill="white" font-weight="bold">B</text>
+
+                                <circle cx="200" cy="200" r="20" fill="#94a3b8" stroke="#fff" stroke-width="3"/>
+                                <text x="200" y="205" text-anchor="middle" fill="white" font-weight="bold">C</text>
+
+                                <circle cx="350" cy="125" r="24" fill="#10b981" stroke="#fff" stroke-width="4"/>
+                                <text x="350" y="131" text-anchor="middle" fill="white" font-weight="black" font-size="16">D</text>
+                                <text x="350" y="165" text-anchor="middle" font-size="12" font-weight="bold" fill="#94a3b8">Sekolah</text>
+                            </svg>
+                        </div>
+
+                        <div class="bg-amber-50 p-6 rounded-[2rem] border-2 border-amber-200 shadow-sm">
+                            <h4 class="font-black text-amber-800 mb-4 text-center text-xl flex items-center justify-center">
+                                <span class="text-3xl mr-2">🎯</span> Pilih Rute TERPENDEK!
+                            </h4>
+                            <div class="space-y-4">
+                                <button onclick="checkRoute(1)" class="btn-3d w-full text-left px-6 py-4 bg-white rounded-2xl border-2 border-slate-200 hover:border-amber-400 hover:bg-amber-50 font-bold transition flex items-center justify-between text-slate-700">
+                                    <span><span class="bg-slate-200 px-2 py-1 rounded text-sm mr-2">1</span> Rute A ➡️ B ➡️ D</span>
+                                    <span class="text-sm text-slate-400">Jarak: 4 + 3 = 7</span>
+                                </button>
+                                <button onclick="checkRoute(2)" class="btn-3d w-full text-left px-6 py-4 bg-white rounded-2xl border-2 border-slate-200 hover:border-amber-400 hover:bg-amber-50 font-bold transition flex items-center justify-between text-slate-700">
+                                    <span><span class="bg-slate-200 px-2 py-1 rounded text-sm mr-2">2</span> Rute A ➡️ C ➡️ D</span>
+                                    <span class="text-sm text-slate-400">Jarak: 2 + 6 = 8</span>
+                                </button>
+                                <button onclick="checkRoute(3)" class="btn-3d w-full text-left px-6 py-4 bg-white rounded-2xl border-2 border-slate-200 hover:border-amber-400 hover:bg-amber-50 font-bold transition flex items-center justify-between text-slate-700">
+                                    <span><span class="bg-slate-200 px-2 py-1 rounded text-sm mr-2">3</span> Rute Langsung (A ➡️ D)</span>
+                                    <span class="text-sm text-slate-400">Jarak: 9</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function checkRoute(choice) {
+            if (choice === 1) {
+                addXP(20);
+                showFeedback(true, "Dalam dunia komputasi, mencari jalur terpendek adalah salah satu fungsi utama dari Graph (digunakan di Google Maps, Gojek, dll).", "Pemecah Masalah!", () => {
+                    awardBadge(BADGES.SOLVER);
+                    showNextButton();
+                });
+            } else {
+                loseLife();
+                if(state.lives > 0) {
+                    showFeedback(false, "Coba cek lagi angkanya. Cari total angka yang paling KECIL.");
+                }
+            }
+        }
+
+        function renderLevel6(container) {
+            const questions = [
+                { text: "Struktur folder komputer", answer: "TREE", icon: "📁" },
+                { text: "Peta Rute Penerbangan", answer: "GRAPH", icon: "✈️" },
+                { text: "Silsilah Keluarga", answer: "TREE", icon: "👨‍👩‍👧‍👦" },
+                { text: "Jaringan Pertemanan Sosmed", answer: "GRAPH", icon: "🤝" }
+            ];
+
+            window.l6_currentIndex = 0;
+            window.l6_questions = questions;
+
+            renderL6Question(container);
+        }
+
+        function renderL6Question(container) {
+            if (window.l6_currentIndex >= window.l6_questions.length) {
+                container.innerHTML = `
+                    <div class="max-w-2xl mx-auto text-center slide-up mt-12 bg-white p-10 rounded-[2rem] shadow-2xl border-4 border-indigo-100">
+                        <div class="text-7xl mb-6 float">⚔️</div>
+                        <h2 class="text-4xl font-black text-slate-800 mb-4">Ujian Selesai!</h2>
+                        <p class="text-xl text-slate-600 mb-10 font-medium">Kamu berhasil membedakan penggunaan Tree dan Graph dengan sangat baik.</p>
+                        <button onclick="goToNextState()" class="btn-3d bg-indigo-500 text-white font-black py-4 px-12 rounded-2xl text-xl border-b-4 border-indigo-700 shadow-xl">
+                            LANJUT KE MISI FINAL 🔥
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const q = window.l6_questions[window.l6_currentIndex];
+            
+            const html = `
+                <div class="max-w-3xl mx-auto slide-up pb-10">
+                    <div class="flex justify-between items-center mb-8">
+                        <span class="bg-indigo-100 text-indigo-700 font-bold px-4 py-1.5 rounded-full text-sm">Kasus ${window.l6_currentIndex + 1} / ${window.l6_questions.length}</span>
+                        <h2 class="text-2xl sm:text-3xl font-black text-slate-800">⚔️ Tentukan Pilihanmu</h2>
+                    </div>
+
+                    <div class="bg-white p-8 sm:p-12 rounded-[2rem] shadow-xl text-center border-2 border-slate-100 relative">
+                        <div class="text-7xl mb-6 pop">${q.icon}</div>
+                        <h3 class="text-3xl font-black text-slate-800 mb-8">"${q.text}"</h3>
+                        
+                        <p class="text-slate-500 mb-8 font-medium">Struktur data mana yang paling cocok digunakan?</p>
+                        
+                        <div class="flex flex-col sm:flex-row gap-5 justify-center">
+                            <button onclick="checkL6Answer('TREE')" class="btn-3d flex-1 bg-emerald-500 text-white font-black py-5 px-6 rounded-2xl text-2xl flex items-center justify-center border-b-4 border-emerald-700">
+                                🌳 TREE
+                            </button>
+                            <button onclick="checkL6Answer('GRAPH')" class="btn-3d flex-1 bg-pink-500 text-white font-black py-5 px-6 rounded-2xl text-2xl flex items-center justify-center border-b-4 border-pink-700">
+                                🗺️ GRAPH
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function checkL6Answer(answer) {
+            const q = window.l6_questions[window.l6_currentIndex];
+            if (answer === q.answer) {
+                addXP(10);
+                const reason = answer === 'TREE' ? "Memiliki hubungan bertingkat/hierarki." : "Objek saling terhubung tanpa hierarki (jaringan).";
+                showFeedback(true, reason, "Tepat Sekali!", () => {
+                    window.l6_currentIndex++;
+                    renderL6Question(document.getElementById('game-content'));
+                });
+            } else {
+                loseLife();
+                if(state.lives > 0) {
+                    showFeedback(false, "Apakah data ini bertingkat (Tree) atau hanya jaringan yang saling terhubung (Graph)?");
+                }
+            }
+        }
+
+        function renderFinalMission(container) {
+            const html = `
+                <div class="max-w-4xl mx-auto slide-up pb-10">
+                    <div class="text-center mb-8">
+                        <span class="bg-purple-100 text-purple-800 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wider">Final Mission</span>
+                        <h2 class="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 mt-4 game-title drop-shadow-sm">🏆 DATA MASTER</h2>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-[2rem] shadow-xl border-t-8 border-purple-500 relative">
+                        <div class="absolute -top-10 right-4 text-7xl float">🏫</div>
+                        <p class="text-lg text-slate-700 mb-6 font-medium leading-relaxed max-w-2xl">
+                            Sebuah sekolah sedang membangun sistem informasi. Pasangkan dua kebutuhan ini dengan struktur data yang tepat!
+                        </p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                            <!-- Kebutuhan 1 -->
+                            <div class="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 text-center shadow-sm">
+                                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">👥</div>
+                                <p class="font-bold text-slate-800 mb-4 h-12 flex items-center justify-center">1. Struktur Organisasi <br>(Kepsek -> Guru)</p>
+                                <select id="final-select-1" class="w-full p-4 rounded-xl border-2 border-slate-300 font-bold text-slate-700 focus:outline-none focus:border-purple-500 bg-white appearance-none text-center cursor-pointer">
+                                    <option value="">-- Pilih --</option>
+                                    <option value="tree">🌳 TREE</option>
+                                    <option value="graph">🗺️ GRAPH</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Kebutuhan 2 -->
+                            <div class="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 text-center shadow-sm">
+                                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🛣️</div>
+                                <p class="font-bold text-slate-800 mb-4 h-12 flex items-center justify-center">2. Jalan Penghubung <br>antar Gedung Sekolah</p>
+                                <select id="final-select-2" class="w-full p-4 rounded-xl border-2 border-slate-300 font-bold text-slate-700 focus:outline-none focus:border-purple-500 bg-white appearance-none text-center cursor-pointer">
+                                    <option value="">-- Pilih --</option>
+                                    <option value="tree">🌳 TREE</option>
+                                    <option value="graph">🗺️ GRAPH</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-10 text-center">
+                            <button onclick="checkFinalMission()" class="btn-3d bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black py-4 px-12 rounded-2xl text-xl border-b-4 border-purple-800 shadow-lg">
+                                KUMPULKAN JAWABAN
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function checkFinalMission() {
+            const ans1 = document.getElementById('final-select-1').value;
+            const ans2 = document.getElementById('final-select-2').value;
+
+            if (ans1 === 'tree' && ans2 === 'graph') {
+                addXP(50);
+                showFeedback(true, "Organisasi memiliki hirarki (Tree).<br>Jalan penghubung adalah jaringan rute (Graph).<br><br><strong>Kamu sudah siap untuk Ujian Akhir!</strong>", "Sempurna!", () => {
+                    showNextButton();
+                });
+            } else if (ans1 === '' || ans2 === '') {
+                showFeedback(false, "Pilih jawaban untuk kedua studi kasus terlebih dahulu.", "Peringatan");
+            } else {
+                loseLife();
+                if(state.lives > 0) {
+                    showFeedback(false, "Masih ada yang tertukar. Ingat: Organisasi itu dari atas ke bawah. Jalan itu menyambung kemana-mana.");
+                }
+            }
+        }
+
+        function renderFinalQuiz(container) {
+            const questions = [
+                { q: "Apa fungsi utama struktur data?", options: ["Membuat web", "Mengatur data agar mudah dicari", "Menghapus file", "Main game"], a: 1 },
+                { q: "Simpul paling atas di Tree disebut...", options: ["Root", "Leaf", "Edge", "Node"], a: 0 },
+                { q: "Garis penghubung pada Graph disebut...", options: ["Root", "Child", "Leaf", "Edge"], a: 3 },
+                { q: "Peta jalan paling cocok menggunakan...", options: ["Tree", "Graph", "Tabel", "Acak"], a: 1 },
+                { q: "Silsilah keluarga paling cocok menggunakan...", options: ["Tree", "Graph", "Array", "File"], a: 0 }
+            ];
+
+            window.quiz_data = questions;
+            window.quiz_currentIndex = 0;
+            state.final_quiz_score = 0; 
+
+            renderQuizQuestion(container);
+        }
+
+        function renderQuizQuestion(container) {
+            if (window.quiz_currentIndex >= window.quiz_data.length) {
+                awardBadge(BADGES.MASTER);
+                changeState(GameState.RESULT);
+                return;
+            }
+
+            const q = window.quiz_data[window.quiz_currentIndex];
+            const qNum = window.quiz_currentIndex + 1;
+            const progressPct = ((qNum - 1) / window.quiz_data.length) * 100;
+
+            let html = `
+                <div class="max-w-3xl mx-auto slide-up pb-10">
+                    <div class="text-center mb-6">
+                        <span class="bg-red-100 text-red-800 font-black px-6 py-2 rounded-full tracking-wider shadow-sm border border-red-200">FINAL QUIZ</span>
+                    </div>
+
+                    <div class="bg-white p-8 sm:p-10 rounded-[2rem] shadow-xl border-t-8 border-indigo-600">
+                        <div class="flex justify-between items-center mb-3 text-slate-400 text-sm font-bold">
+                            <span>Soal ${qNum} dari ${window.quiz_data.length}</span>
+                        </div>
+                        
+                        <div class="w-full bg-slate-100 rounded-full h-3 mb-8 overflow-hidden shadow-inner">
+                            <div class="bg-indigo-500 h-3 rounded-full transition-all duration-500" style="width: ${progressPct}%"></div>
+                        </div>
+
+                        <h3 class="text-2xl sm:text-3xl font-black text-slate-800 mb-10 leading-snug">${q.q}</h3>
+                        
+                        <div class="space-y-4">
+            `;
+
+            q.options.forEach((opt, index) => {
+                html += `
+                    <button onclick="checkQuizAnswer(${index}, ${q.a})" class="btn-3d w-full text-left p-5 rounded-2xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 font-bold text-slate-700 transition flex items-center group">
+                        <div class="w-10 h-10 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center mr-4 group-hover:border-indigo-500 group-hover:bg-indigo-500 group-hover:text-white transition-colors text-lg">${String.fromCharCode(65 + index)}</div>
+                        <span class="text-lg flex-1">${opt}</span>
+                    </button>
+                `;
+            });
+
+            html += `
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function checkQuizAnswer(selectedIndex, correctIndex) {
+            if (selectedIndex === correctIndex) {
+                state.final_quiz_score++;
+                addXP(20);
+                showFeedback(true, "Jawaban kamu tepat!", "Benar", () => {
+                    window.quiz_currentIndex++;
+                    renderQuizQuestion(document.getElementById('game-content'));
+                });
+            } else {
+                showFeedback(false, `Belum tepat. Jawaban yang benar adalah <strong>${String.fromCharCode(65 + correctIndex)}</strong>.`, "Salah", () => {
+                    window.quiz_currentIndex++;
+                    renderQuizQuestion(document.getElementById('game-content'));
+                });
+            }
+        }
+
+        function renderResult(container) {
+            const percentScore = (state.final_quiz_score / window.quiz_data.length) * 100;
+            
+            let rank = ""; let rankIcon = ""; let message = ""; let titleClass = "";
+
+            if (percentScore >= 80) {
+                rank = "DATA MASTER"; rankIcon = "👑"; 
+                message = "Luar biasa! Pemahamanmu sangat kuat."; titleClass = "text-yellow-500";
+            } else if (percentScore >= 60) {
+                rank = "DATA EXPLORER"; rankIcon = "🏅"; 
+                message = "Kerja bagus! Kamu paham dasar-dasarnya."; titleClass = "text-blue-500";
+            } else {
+                rank = "DATA BEGINNER"; rankIcon = "🌱"; 
+                message = "Teruslah berlatih untuk menjadi lebih baik!"; titleClass = "text-green-500";
+            }
+
+            let badgesHtml = state.badges.map(b => `
+                <div class="bg-white p-3 rounded-2xl flex flex-col items-center justify-center shadow-md border-2 border-slate-100 w-24 h-28 transform hover:scale-110 transition">
+                    <span class="text-3xl mb-1">${b.icon}</span>
+                    <span class="text-xs font-black text-slate-700 text-center leading-tight">${b.name}</span>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <!-- Confetti Background (CSS approach) -->
+                <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                    <div class="absolute w-4 h-4 bg-red-500 rounded-full top-10 left-10 float" style="animation-delay: 0.1s"></div>
+                    <div class="absolute w-4 h-4 bg-blue-500 rounded-full top-20 right-20 float" style="animation-delay: 0.5s"></div>
+                    <div class="absolute w-4 h-4 bg-yellow-500 rounded-full bottom-20 left-1/4 float" style="animation-delay: 0.3s"></div>
+                    <div class="absolute w-4 h-4 bg-green-500 rounded-full top-1/3 right-1/3 float" style="animation-delay: 0.7s"></div>
+                </div>
+
+                <div class="max-w-3xl mx-auto mt-4 mb-10 fade-in relative z-10">
+                    <div class="bg-white rounded-[2rem] p-8 sm:p-12 shadow-2xl border-4 border-indigo-100 text-center">
+                        
+                        <h1 class="text-4xl sm:text-5xl font-black text-slate-800 mb-2">🎉 MISI SELESAI!</h1>
+                        <p class="text-xl text-slate-500 mb-8 font-bold">Selamat, <span class="text-indigo-600">${state.playerName}</span>!</p>
+
+                        <div class="bg-slate-50 rounded-[2rem] p-8 mb-8 inline-block shadow-inner border-2 border-slate-200 w-full sm:w-auto min-w-[300px]">
+                            <div class="text-7xl mb-4 bounce-soft">${rankIcon}</div>
+                            <h2 class="text-4xl font-black ${titleClass} tracking-wide uppercase mb-2 drop-shadow-sm">${rank}</h2>
+                            <p class="text-slate-600 font-medium mb-6">"${message}"</p>
+                            
+                            <div class="grid grid-cols-2 gap-4 mt-6 text-left">
+                                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                                    <p class="text-sm text-slate-400 font-black uppercase mb-1">Total XP</p>
+                                    <p class="text-3xl font-black text-indigo-600">${state.xp}</p>
+                                </div>
+                                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                                    <p class="text-sm text-slate-400 font-black uppercase mb-1">Skor Kuis</p>
+                                    <p class="text-3xl font-black text-green-500">${percentScore}%</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-10">
+                            <h3 class="text-sm font-black text-slate-400 uppercase mb-4 tracking-widest">Koleksi Badge</h3>
+                            <div class="flex flex-wrap justify-center gap-4">
+                                ${badgesHtml}
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+                            <button onclick="resetGame()" class="btn-3d w-full sm:w-auto bg-indigo-500 text-white font-black py-4 px-10 rounded-2xl text-xl border-b-4 border-indigo-700">
+                                <i class="fas fa-home mr-2"></i> MAIN LAGI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.onload = () => {
+            renderCurrentState(); 
+        };
+    </script>
+</body>
+</html>
