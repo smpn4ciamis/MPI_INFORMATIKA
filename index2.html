@@ -1,1 +1,1443 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA QUEST: Petualangan Tree & Graph</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            color: #334155;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
+        .bg-cyber {
+            background: linear-gradient(120deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bg-cyber::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(255,255,255,0.08) 0%, transparent 20%),
+                radial-gradient(circle at 85% 30%, rgba(255,255,255,0.08) 0%, transparent 20%);
+            pointer-events: none;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+
+        .btn-3d {
+            transition: all 0.2s ease;
+            position: relative;
+            top: 0;
+        }
+        
+        .btn-3d:active {
+            top: 4px;
+            box-shadow: 0 0px 0 0 rgba(0,0,0,0.2) !important;
+        }
+
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+            box-shadow: 0 6px 0 0 #3730a3, 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem;
+        }
+        .btn-primary:hover { background-color: #4338ca; }
+
+        .btn-secondary {
+            background-color: #10b981;
+            color: white;
+            box-shadow: 0 6px 0 0 #059669, 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem;
+        }
+        .btn-secondary:hover { background-color: #059669; }
+
+        .interactive-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .interactive-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: #6366f1;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+        }
+
+        .hidden-el { display: none !important; }
+        
+        .slide-up { animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pop { animation: popScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popScale {
+            0% { transform: scale(0.9); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse-danger { animation: pulseDanger 1s infinite; }
+        @keyframes pulseDanger {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .svg-interactive {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .svg-interactive:hover {
+            filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.8));
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            background-color: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- HUD (Heads Up Display) -->
+    <div id="hud" class="fixed top-0 w-full p-4 z-40 hidden-el transition-all duration-300 slide-up">
+        <div class="max-w-5xl mx-auto glass-panel rounded-2xl p-3 sm:px-6 flex justify-between items-center flex-wrap gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-100 text-indigo-800 font-bold px-4 py-2 rounded-xl flex items-center shadow-inner">
+                    <i class="fas fa-user-astronaut mr-2 text-indigo-500"></i>
+                    <span id="hud-name">Player</span> 
+                    <span class="mx-2 text-indigo-300">|</span> 
+                    <span id="hud-group" class="text-sm font-semibold bg-white px-2 py-0.5 rounded-md shadow-sm">Klp 1</span>
+                </div>
+            </div>
+            <!-- Fitur Nyawa (Lives) dihapus dari HUD -->
+            <div class="flex items-center space-x-3 sm:space-x-4 font-black text-sm sm:text-base">
+                <div id="timer-container" class="hidden-el flex items-center bg-blue-100 text-blue-600 px-4 py-2 rounded-xl shadow-sm transition-all duration-300 border border-blue-200">
+                    <i class="fas fa-stopwatch mr-2 text-lg"></i> <span id="hud-timer">00:00</span>
+                </div>
+                <div class="flex items-center bg-amber-100 text-amber-600 px-4 py-2 rounded-xl shadow-sm border border-amber-200">
+                    <i class="fas fa-star text-amber-500 mr-2 text-lg"></i> <span id="hud-xp">0 XP</span>
+                </div>
+                <div class="flex items-center bg-emerald-100 text-emerald-600 px-4 py-2 rounded-xl shadow-sm border border-emerald-200">
+                    <i class="fas fa-medal text-emerald-500 mr-2 text-lg"></i> <span id="hud-badges">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="max-w-5xl mx-auto mt-2 h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner relative">
+            <div id="hud-progress" class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500 w-0 relative">
+                <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main id="game-container" class="min-h-screen pt-24 pb-20 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
+        <!-- Content will be injected here -->
+    </main>
+
+    <!-- Modal Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center hidden-el opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300 flex flex-col items-center text-center">
+            <div id="feedback-icon" class="text-7xl mb-4"></div>
+            <h3 id="feedback-title" class="text-2xl font-black text-slate-800 mb-2"></h3>
+            <p id="feedback-message" class="text-slate-600 text-lg mb-6 font-medium"></p>
+            <button onclick="closeFeedback()" class="btn-3d btn-primary w-full py-4 px-6 font-bold text-lg">
+                Lanjut <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Badge Notification -->
+    <div id="toast-badge" class="fixed top-24 right-4 sm:right-10 z-50 hidden-el transition-all duration-500 transform translate-x-[150%] bg-white p-4 rounded-2xl shadow-2xl border-l-8 border-amber-400 flex items-center gap-4 min-w-[250px]">
+        <div class="text-4xl" id="toast-icon">🏆</div>
+        <div>
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Badge Diraih!</p>
+            <p class="text-lg font-black text-amber-600" id="toast-name">Data Master</p>
+        </div>
+    </div>
+
+    <!-- Next Button Floating -->
+    <div id="next-container" class="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-40 hidden-el pop">
+        <button onclick="nextLevel()" class="btn-3d btn-secondary px-8 py-4 font-black text-xl shadow-xl flex items-center rounded-full">
+            MISI BERIKUTNYA <i class="fas fa-chevron-right ml-3 bg-white/20 p-2 rounded-full"></i>
+        </button>
+    </div>
+
+    <script>
+        // --- DATA & KONFIGURASI GAME ---
+        const BADGES = {
+            BEGINNER: { id: 'beginner', name: 'Data Beginner', icon: '🌱', color: 'text-green-500' },
+            TREE: { id: 'tree', name: 'Tree Explorer', icon: '🌳', color: 'text-emerald-600' },
+            GRAPH: { id: 'graph', name: 'Graph Navigator', icon: '🗺️', color: 'text-blue-500' },
+            PROBLEM: { id: 'problem', name: 'Problem Solver', icon: '🧠', color: 'text-purple-500' },
+            MASTER: { id: 'master', name: 'Data Master', icon: '🏆', color: 'text-yellow-500' }
+        };
+
+        const GameState = {
+            HOME: 'HOME', BRIEFING: 'BRIEFING', LEVEL1: 'LEVEL1', LEVEL2: 'LEVEL2',
+            LEVEL3: 'LEVEL3', LEVEL4: 'LEVEL4', LEVEL5: 'LEVEL5', LEVEL6: 'LEVEL6',
+            FINAL_MISSION: 'FINAL_MISSION', FINAL_QUIZ: 'FINAL_QUIZ', RESULT: 'RESULT'
+        };
+
+        // --- VARIASI 8 KELOMPOK ---
+        const gameVariations = {
+            1: {
+                l1: [
+                    { text: "Struktur Organisasi OSIS", isData: true, desc: "Data bertingkat dari ketua hingga anggota." },
+                    { text: "Tumpukan baju kotor", isData: false, desc: "Tidak ada keteraturan yang jelas." },
+                    { text: "Peta Rute Angkot", isData: true, desc: "Menghubungkan berbagai titik lokasi." }
+                ],
+                l3: { target: "Tugas-Tree.docx", path: ["Dokumen", "Informatika", "Tugas", "Tugas-Tree.docx"] },
+                l5: [
+                    { path: "Rumah -> A -> Sekolah", dist: 15 },
+                    { path: "Rumah -> B -> C -> Sekolah", dist: 12 },
+                    { path: "Rumah -> D -> Sekolah", dist: 20 }
+                ],
+                l6: [
+                    { q: "Silsilah Keluarga (Kakek -> Ayah -> Anak)", a: 'TREE', exp: "Hubungan bertingkat/hierarki." },
+                    { q: "Jaringan Komputer di Lab", a: 'GRAPH', exp: "Komputer saling terhubung satu sama lain." }
+                ],
+                fm: [
+                    { q: "Jalur evakuasi pemadam kebakaran antar gedung", type: "GRAPH" },
+                    { q: "Struktur folder laporan keuangan tahunan", type: "TREE" }
+                ],
+                quiz: [
+                    { q: "Node yang tidak memiliki anak pada Tree disebut?", options: ["Root", "Edge", "Leaf", "Parent"], a: 2 },
+                    { q: "Manakah yang paling cocok menggunakan Graph?", options: ["Struktur Folder", "Peta Jalan", "Silsilah Keluarga", "Daftar Menu"], a: 1 },
+                    { q: "Simpul awal pada sebuah Tree disebut...", options: ["Root", "Branch", "Leaf", "Node"], a: 0 },
+                    { q: "Garis yang menghubungkan antar node pada Graph disebut...", options: ["Root", "Edge", "Leaf", "Parent"], a: 1 },
+                    { q: "Jika ada 4 kota saling terhubung, struktur apa yang pas?", options: ["Tree", "Graph", "Array", "Stack"], a: 1 }
+                ]
+            },
+            2: {
+                l1: [
+                    { text: "Jadwal Kereta Api", isData: true, desc: "Data terstruktur menghubungkan stasiun." },
+                    { text: "Catatan coretan di buku", isData: false, desc: "Sulit diidentifikasi polanya." },
+                    { text: "Struktur Folder Musik", isData: true, desc: "Data dikelompokkan dalam folder." }
+                ],
+                l3: { target: "Rumus.pdf", path: ["Dokumen", "Matematika", "Materi", "Rumus.pdf"] },
+                l5: [
+                    { path: "Stasiun -> Jalur 1 -> Terminal", dist: 10 },
+                    { path: "Stasiun -> Jalur 2 -> Pasar -> Terminal", dist: 8 },
+                    { path: "Stasiun -> Jalur 3 -> Terminal", dist: 15 }
+                ],
+                l6: [
+                    { q: "Peta Jalur Penerbangan Pesawat", a: 'GRAPH', exp: "Bandara saling terhubung (Graph)." },
+                    { q: "Daftar Menu Makanan Kategori", a: 'TREE', exp: "Kategori -> Subkategori -> Menu (Tree)." }
+                ],
+                fm: [
+                    { q: "Struktur kepanitiaan lomba 17 Agustus", type: "TREE" },
+                    { q: "Rute patroli keamanan keliling sekolah", type: "GRAPH" }
+                ],
+                quiz: [
+                    { q: "Struktur data untuk peta jalan antar kota adalah...", options: ["Tree", "Array", "Graph", "Queue"], a: 2 },
+                    { q: "Simpul yang berada di paling bawah Tree adalah...", options: ["Parent", "Root", "Edge", "Leaf"], a: 3 },
+                    { q: "Dalam Graph, kota diwakili oleh...", options: ["Edge", "Node", "Root", "Leaf"], a: 1 },
+                    { q: "Hubungan atasan dan bawahan menggunakan...", options: ["Graph", "Tree", "Edge", "Leaf"], a: 1 },
+                    { q: "Garis penghubung dalam Graph dinamakan...", options: ["Edge", "Line", "Root", "Node"], a: 0 }
+                ]
+            },
+            3: {
+                l1: [
+                    { text: "Daftar Belanja Acak", isData: false, desc: "Hanya list biasa tanpa struktur relasi." },
+                    { text: "Bagan Turnamen Sepak Bola", isData: true, desc: "Struktur hierarki (seperti Tree terbalik)." },
+                    { text: "Jaringan Pertemanan Sosmed", isData: true, desc: "Relasi antar individu (Graph)." }
+                ],
+                l3: { target: "Puisi.txt", path: ["Dokumen", "B.Indonesia", "Tugas", "Puisi.txt"] },
+                l5: [
+                    { path: "Pintu Masuk -> Lorong A -> Kantin", dist: 25 },
+                    { path: "Pintu Masuk -> Lorong B -> Kantin", dist: 30 },
+                    { path: "Pintu Masuk -> Taman -> Lorong C -> Kantin", dist: 20 }
+                ],
+                l6: [
+                    { q: "Peta Jaringan Internet antar benua", a: 'GRAPH', exp: "Koneksi antar node (Graph)." },
+                    { q: "Struktur Kategori Toko Online (Elektronik -> HP -> Merk)", a: 'TREE', exp: "Klasifikasi bertingkat (Tree)." }
+                ],
+                fm: [
+                    { q: "Jalur pipa air bersih ke seluruh ruangan", type: "GRAPH" },
+                    { q: "Silsilah kepemilikan yayasan sekolah", type: "TREE" }
+                ],
+                quiz: [
+                    { q: "Struktur data hierarkis (bertingkat) disebut...", options: ["Graph", "Array", "Tree", "Stack"], a: 2 },
+                    { q: "Jaringan sosial seperti Facebook direpresentasikan dengan...", options: ["Tree", "Graph", "Queue", "List"], a: 1 },
+                    { q: "Simpul induk yang memiliki anak disebut...", options: ["Leaf", "Root", "Parent", "Edge"], a: 2 },
+                    { q: "Jalur yang menghubungkan 2 node pada Graph disebut...", options: ["Edge", "Branch", "Leaf", "Parent"], a: 0 },
+                    { q: "Mana yang BUKAN bagian dari Tree?", options: ["Root", "Edge (Jalur Graph)", "Leaf", "Parent"], a: 1 }
+                ]
+            },
+            4: {
+                l1: [
+                    { text: "Silsilah Kerajaan Majapahit", isData: true, desc: "Hierarki silsilah (Tree)." },
+                    { text: "Peta Rute Pendakian Gunung", isData: true, desc: "Jalur pos-pos (Graph)." },
+                    { text: "Kumpulan daun gugur", isData: false, desc: "Tidak ada pola terstruktur." }
+                ],
+                l3: { target: "Bakteri.jpg", path: ["Dokumen", "IPA", "Biologi", "Bakteri.jpg"] },
+                l5: [
+                    { path: "Basecamp -> Pos 1 -> Puncak", dist: 40 },
+                    { path: "Basecamp -> Pos 2 -> Pos 3 -> Puncak", dist: 35 },
+                    { path: "Basecamp -> Jalur Air -> Puncak", dist: 50 }
+                ],
+                l6: [
+                    { q: "Struktur Bab dan Sub-bab di Buku", a: 'TREE', exp: "Pecahan hierarki materi." },
+                    { q: "Rute Angkutan Umum di Kota", a: 'GRAPH', exp: "Titik stasiun yang terhubung." }
+                ],
+                fm: [
+                    { q: "Peta lokasi letak CCTV sekolah", type: "GRAPH" },
+                    { q: "Struktur taksonomi hewan di lab biologi", type: "TREE" }
+                ],
+                quiz: [
+                    { q: "Peta rute bus kota paling tepat menggunakan struktur...", options: ["Tree", "Graph", "Stack", "Root"], a: 1 },
+                    { q: "Silsilah keluarga paling tepat menggunakan struktur...", options: ["Tree", "Graph", "Edge", "Leaf"], a: 0 },
+                    { q: "Node tunggal di puncak Tree disebut...", options: ["Leaf", "Parent", "Root", "Edge"], a: 2 },
+                    { q: "Node yang saling terhubung oleh Edge adalah komponen...", options: ["Tree", "Graph", "List", "Array"], a: 1 },
+                    { q: "Simpul tanpa keturunan/anak pada Tree adalah...", options: ["Root", "Parent", "Edge", "Leaf"], a: 3 }
+                ]
+            },
+             5: {
+                l1: [
+                    { text: "Struktur Kabinet Pemerintahan", isData: true, desc: "Hierarki pemerintahan (Tree)." },
+                    { text: "Peta Jalur MRT/KRL", isData: true, desc: "Rute dan stasiun terhubung (Graph)." },
+                    { text: "Daftar tamu acak di buku", isData: false, desc: "Tidak ada keterkaitan." }
+                ],
+                l3: { target: "Revolusi.pdf", path: ["Dokumen", "Sejarah", "Materi", "Revolusi.pdf"] },
+                l5: [
+                    { path: "Halte A -> Halte B -> Stasiun", dist: 18 },
+                    { path: "Halte A -> Halte C -> Halte D -> Stasiun", dist: 14 },
+                    { path: "Halte A -> Jalur Cepat -> Stasiun", dist: 22 }
+                ],
+                l6: [
+                    { q: "Struktur Folder Email (Inbox -> Promo, Sosial)", a: 'TREE', exp: "Kategori bertingkat." },
+                    { q: "Peta persebaran BTS Tower Seluler", a: 'GRAPH', exp: "Koneksi antar menara sinyal." }
+                ],
+                fm: [
+                    { q: "Jalur distribusi makanan katering ke berbagai kelas", type: "GRAPH" },
+                    { q: "Bagan pertandingan sistem gugur Class Meeting", type: "TREE" }
+                ],
+                quiz: [
+                    { q: "Jika kita memetakan rute paket pengiriman, kita gunakan...", options: ["Tree", "Graph", "Leaf", "Root"], a: 1 },
+                    { q: "Dalam Tree organisasi, Direktur berada di posisi...", options: ["Leaf", "Root", "Edge", "Parent"], a: 1 },
+                    { q: "Garis yang menghubungkan rumah dan sekolah di peta disebut...", options: ["Edge", "Node", "Root", "Leaf"], a: 0 },
+                    { q: "Yang BUKAN merupakan struktur data adalah...", options: ["Tree", "Graph", "Kertas Buram", "Array"], a: 2 },
+                    { q: "Data yang disusun berdasar tingkat atas-bawah disebut...", options: ["Graph", "Tree", "Network", "Edge"], a: 1 }
+                ]
+            },
+            6: {
+                l1: [
+                    { text: "Jaringan Listrik Rumah", isData: true, desc: "Kabel yang menghubungkan stopkontak (Graph)." },
+                    { text: "Susunan Pemain Bola (Formasi)", isData: false, desc: "Bukan struktur data penyimpanan." },
+                    { text: "Klasifikasi Makhluk Hidup", isData: true, desc: "Pengelompokan Kingdom, Filum, dll (Tree)." }
+                ],
+                l3: { target: "Pidato.docx", path: ["Dokumen", "Bahasa", "Tugas", "Pidato.docx"] },
+                l5: [
+                    { path: "PLN -> Gardu A -> Rumah", dist: 5 },
+                    { path: "PLN -> Gardu B -> Gardu C -> Rumah", dist: 3 },
+                    { path: "PLN -> Kabel Langsung -> Rumah", dist: 8 }
+                ],
+                l6: [
+                    { q: "Peta Koneksi Bluetooth antar Device", a: 'GRAPH', exp: "Perangkat terhubung secara jaring." },
+                    { q: "Struktur Karyawan Perusahaan", a: 'TREE', exp: "Hierarki bos ke bawahan." }
+                ],
+                fm: [
+                    { q: "Desain jaringan WiFi sekolah di berbagai ruang", type: "GRAPH" },
+                    { q: "Daftar kategori peminjam buku di perpustakaan", type: "TREE" }
+                ],
+                quiz: [
+                    { q: "Sistem jaringan komputer paling baik dimodelkan dengan...", options: ["Tree", "Graph", "Array", "Stack"], a: 1 },
+                    { q: "Bagian dari Tree yang memiliki anak disebut...", options: ["Parent", "Leaf", "Root", "Edge"], a: 0 },
+                    { q: "Dalam Graph, setiap persimpangan jalan adalah sebuah...", options: ["Edge", "Node", "Root", "Leaf"], a: 1 },
+                    { q: "Sistem pengurutan folder di Windows Explorer menggunakan...", options: ["Graph", "Tree", "Edge", "Node"], a: 1 },
+                    { q: "Koneksi antar node dalam Graph disebut...", options: ["Node", "Edge", "Root", "Leaf"], a: 1 }
+                ]
+            },
+            7: {
+                l1: [
+                    { text: "Jalur Pelayaran Kapal Laut", isData: true, desc: "Pelabuhan terhubung (Graph)." },
+                    { text: "Bagan Struktur Pengurus RT", isData: true, desc: "Ketua RT ke warga (Tree)." },
+                    { text: "Kumpulan batu di jalan", isData: false, desc: "Tidak memiliki relasi." }
+                ],
+                l3: { target: "Senam.mp4", path: ["Dokumen", "Olahraga", "Video", "Senam.mp4"] },
+                l5: [
+                    { path: "Pelabuhan A -> Rute 1 -> Pelabuhan B", dist: 120 },
+                    { path: "Pelabuhan A -> Pulau X -> Pelabuhan B", dist: 90 },
+                    { path: "Pelabuhan A -> Rute 3 -> Pelabuhan B", dist: 150 }
+                ],
+                l6: [
+                    { q: "Jalur migrasi burung tahunan", a: 'GRAPH', exp: "Titik singgah dan lintasan penerbangan." },
+                    { q: "Silsilah Raja-raja Nusantara", a: 'TREE', exp: "Garis keturunan dari atas ke bawah." }
+                ],
+                fm: [
+                    { q: "Rute bus antar jemput siswa", type: "GRAPH" },
+                    { q: "Struktur kepanitiaan pentas seni sekolah", type: "TREE" }
+                ],
+                quiz: [
+                    { q: "Garis keturunan keluarga adalah contoh paling tepat dari...", options: ["Tree", "Graph", "List", "Node"], a: 0 },
+                    { q: "Di dalam Tree, elemen yang tidak bercabang lagi disebut...", options: ["Root", "Edge", "Leaf", "Parent"], a: 2 },
+                    { q: "Jalur kereta MRT di Jakarta direpresentasikan dengan...", options: ["Tree", "Graph", "Parent", "Leaf"], a: 1 },
+                    { q: "Simpul pada Graph disebut juga...", options: ["Edge", "Node", "Root", "Leaf"], a: 1 },
+                    { q: "Hubungan hierarki (atasan-bawahan) menggunakan...", options: ["Graph", "Tree", "Network", "Array"], a: 1 }
+                ]
+            },
+            8: {
+                l1: [
+                    { text: "Peta Konsep Pelajaran", isData: true, desc: "Topik besar ke subtopik (Tree)." },
+                    { text: "Peta Sirkuit Balap", isData: true, desc: "Jalur balapan (Graph)." },
+                    { text: "Tulisan abstrak di dinding", isData: false, desc: "Bukan data terstruktur." }
+                ],
+                l3: { target: "Kerajinan.jpg", path: ["Dokumen", "Prakarya", "Tugas", "Kerajinan.jpg"] },
+                l5: [
+                    { path: "Start -> Tikungan 1 -> Finish", dist: 8 },
+                    { path: "Start -> Jalan Pintas -> Finish", dist: 5 },
+                    { path: "Start -> Tikungan 2 -> Tikungan 3 -> Finish", dist: 11 }
+                ],
+                l6: [
+                    { q: "Peta topologi jaringan Ring (melingkar)", a: 'GRAPH', exp: "Simpul terhubung membentuk cincin." },
+                    { q: "Kategori menu pada website (Beranda -> Profil -> Visi)", a: 'TREE', exp: "Menu utama ke sub-menu." }
+                ],
+                fm: [
+                    { q: "Pemetaan rute jalanan kompleks sekolah", type: "GRAPH" },
+                    { q: "Bagan pembagian divisi ekstrakurikuler", type: "TREE" }
+                ],
+                quiz: [
+                    { q: "Peta konsep yang bercabang ke subtopik menggunakan struktur...", options: ["Graph", "Tree", "Node", "Edge"], a: 1 },
+                    { q: "Jalan yang menghubungkan antar gedung di game menggunakan...", options: ["Tree", "Graph", "Leaf", "Root"], a: 1 },
+                    { q: "Simpul utama di bagian paling atas peta konsep (Tree) adalah...", options: ["Parent", "Root", "Leaf", "Edge"], a: 1 },
+                    { q: "Konektor atau garis di dalam struktur Graph adalah...", options: ["Node", "Edge", "Leaf", "Parent"], a: 1 },
+                    { q: "Struktur dengan ciri hubungan hierarki (bertingkat) adalah...", options: ["Graph", "Tree", "Array", "Stack"], a: 1 }
+                ]
+            }
+        };
+
+        const state = {
+            currentState: GameState.HOME,
+            playerName: "", 
+            groupId: 1, 
+            xp: 0, 
+            badges: [], 
+            progress: 0,
+            l1_completed: 0, 
+            l2_completed: 0, 
+            l3_completed: false, 
+            l4_completed: 0,
+            l5_completed: 0, 
+            l6_completed: 0, 
+            final_quiz_score: 0,
+            onFeedbackClose: null,
+            // State Timer
+            timeLeft: 0, 
+            timerInterval: null, 
+            currentTimeoutCallback: null
+        };
+
+        const totalLevels = 8;
+
+        // --- STREAMING_CHUNK:Sistem Timer Setup... ---
+        function startTimer(seconds, timeoutCallback) {
+            clearInterval(state.timerInterval);
+            state.timeLeft = seconds;
+            state.currentTimeoutCallback = timeoutCallback;
+            document.getElementById('timer-container').classList.remove('hidden-el');
+            updateTimerUI();
+            
+            state.timerInterval = setInterval(() => {
+                state.timeLeft--;
+                updateTimerUI();
+                if (state.timeLeft <= 0) {
+                    clearInterval(state.timerInterval);
+                    if (state.currentTimeoutCallback) state.currentTimeoutCallback();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(state.timerInterval);
+            document.getElementById('timer-container').classList.add('hidden-el');
+        }
+
+        function pauseTimer() {
+            clearInterval(state.timerInterval);
+        }
+
+        function resumeTimer() {
+            if (state.timeLeft > 0 && !document.getElementById('timer-container').classList.contains('hidden-el')) {
+                state.timerInterval = setInterval(() => {
+                    state.timeLeft--;
+                    updateTimerUI();
+                    if (state.timeLeft <= 0) {
+                        clearInterval(state.timerInterval);
+                        if (state.currentTimeoutCallback) state.currentTimeoutCallback();
+                    }
+                }, 1000);
+            }
+        }
+
+        function updateTimerUI() {
+            const timerEl = document.getElementById('hud-timer');
+            const container = document.getElementById('timer-container');
+            
+            // Efek panik merah jika <= 10 detik
+            if (state.timeLeft <= 10 && state.timeLeft > 0) {
+                container.classList.remove('bg-blue-100', 'text-blue-600', 'border-blue-200');
+                container.classList.add('bg-red-100', 'text-red-600', 'border-red-200', 'pulse-danger');
+            } else {
+                container.classList.add('bg-blue-100', 'text-blue-600', 'border-blue-200');
+                container.classList.remove('bg-red-100', 'text-red-600', 'border-red-200', 'pulse-danger');
+            }
+
+            const m = Math.floor(state.timeLeft / 60).toString().padStart(2, '0');
+            const s = (state.timeLeft % 60).toString().padStart(2, '0');
+            timerEl.innerText = `${m}:${s}`;
+        }
+
+        // --- STREAMING_CHUNK:HUD UI Logic... ---
+        window.onload = function() {
+            renderCurrentState();
+        };
+
+        function updateHUD() {
+            document.getElementById('hud-name').innerText = state.playerName || "Player";
+            document.getElementById('hud-group').innerText = `Klp ${state.groupId}`;
+            document.getElementById('hud-xp').innerText = `${state.xp} XP`;
+            document.getElementById('hud-badges').innerText = state.badges.length;
+            
+            const currentLevelNum = Object.keys(GameState).indexOf(state.currentState) - 1; 
+            const progressPercent = Math.max(0, (currentLevelNum / totalLevels) * 100);
+            document.getElementById('hud-progress').style.width = `${progressPercent}%`;
+
+            if (state.currentState !== GameState.HOME && state.currentState !== GameState.RESULT) {
+                document.getElementById('hud').classList.remove('hidden-el');
+            } else {
+                document.getElementById('hud').classList.add('hidden-el');
+            }
+        }
+
+        function addXP(amount) {
+            state.xp += amount;
+            const xpEl = document.getElementById('hud-xp');
+            xpEl.classList.add('pop', 'text-amber-500');
+            setTimeout(() => xpEl.classList.remove('pop', 'text-amber-500'), 500);
+            updateHUD();
+        }
+
+        function awardBadge(badge) {
+            if (!state.badges.find(b => b.id === badge.id)) {
+                state.badges.push(badge);
+                
+                const toast = document.getElementById('toast-badge');
+                document.getElementById('toast-icon').innerText = badge.icon;
+                document.getElementById('toast-name').innerText = badge.name;
+                
+                toast.classList.remove('hidden-el');
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-[150%]');
+                }, 50);
+                
+                setTimeout(() => {
+                    toast.classList.add('translate-x-[150%]');
+                    setTimeout(() => {
+                        toast.classList.add('hidden-el');
+                    }, 500);
+                }, 4000);
+                
+                updateHUD();
+            }
+        }
+
+        function showFeedback(isSuccess, message, title = "", onClose = null) {
+            pauseTimer();
+            const modal = document.getElementById('feedback-modal');
+            const icon = document.getElementById('feedback-icon');
+            const titleEl = document.getElementById('feedback-title');
+            
+            modal.classList.remove('hidden-el');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }, 10);
+
+            if (isSuccess) {
+                icon.innerHTML = '<i class="fas fa-check-circle text-emerald-500 pop inline-block"></i>';
+                titleEl.className = "text-2xl font-black text-emerald-600 mb-2";
+                titleEl.innerText = title || "Benar!";
+            } else {
+                icon.innerHTML = '<i class="fas fa-times-circle text-rose-500 pop inline-block"></i>';
+                titleEl.className = "text-2xl font-black text-rose-600 mb-2";
+                titleEl.innerText = title || "Belum Tepat";
+            }
+            
+            document.getElementById('feedback-message').innerText = message;
+            state.onFeedbackClose = onClose;
+        }
+
+        function closeFeedback() {
+            const modal = document.getElementById('feedback-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden-el');
+                resumeTimer();
+                if (state.onFeedbackClose) {
+                    state.onFeedbackClose();
+                    state.onFeedbackClose = null;
+                }
+            }, 300);
+        }
+
+        function showNextButton() {
+            stopTimer();
+            document.getElementById('next-container').classList.remove('hidden-el');
+        }
+
+        function hideNextButton() {
+            document.getElementById('next-container').classList.add('hidden-el');
+        }
+
+        function changeState(newState) {
+            hideNextButton();
+            state.currentState = newState;
+            updateHUD();
+            renderCurrentState();
+        }
+
+        function nextLevel() {
+            const states = Object.keys(GameState);
+            const currentIndex = states.indexOf(state.currentState);
+            if (currentIndex < states.length - 1) {
+                changeState(states[currentIndex + 1]);
+            }
+        }
+
+        function resetGame() {
+            stopTimer();
+            state.currentState = GameState.HOME;
+            state.xp = 0; state.badges = [];
+            state.l1_completed = 0; state.l2_completed = 0; state.l3_completed = false;
+            state.l4_completed = 0; state.l5_completed = 0; state.l6_completed = 0;
+            state.final_quiz_score = 0;
+            changeState(GameState.HOME);
+        }
+
+        // --- STREAMING_CHUNK:Rendering Game Screens... ---
+        function renderCurrentState() {
+            const container = document.getElementById('game-container');
+            container.innerHTML = ''; 
+
+            switch(state.currentState) {
+                case GameState.HOME: renderHome(container); break;
+                case GameState.BRIEFING: renderBriefing(container); break;
+                case GameState.LEVEL1: renderLevel1(container); break;
+                case GameState.LEVEL2: renderLevel2(container); break;
+                case GameState.LEVEL3: renderLevel3(container); break;
+                case GameState.LEVEL4: renderLevel4(container); break;
+                case GameState.LEVEL5: renderLevel5(container); break;
+                case GameState.LEVEL6: renderLevel6(container); break;
+                case GameState.FINAL_MISSION: renderFinalMission(container); break;
+                case GameState.FINAL_QUIZ: renderFinalQuiz(container); break;
+                case GameState.RESULT: renderResult(container); break;
+            }
+        }
+
+        function renderHome(container) {
+            container.className = "min-h-screen flex items-center justify-center p-4 sm:p-8 bg-cyber";
+            container.innerHTML = `
+                <div class="glass-panel p-8 sm:p-12 rounded-[2.5rem] shadow-2xl max-w-3xl w-full text-center slide-up relative overflow-hidden border border-white/20">
+                    <div class="absolute -top-10 -right-10 text-9xl opacity-10">🌳</div>
+                    <div class="absolute -bottom-10 -left-10 text-9xl opacity-10">🗺️</div>
+                    
+                    <h1 class="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-4 tracking-tight drop-shadow-sm">
+                        DATA QUEST
+                    </h1>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-700 mb-8 bg-white/50 inline-block px-6 py-2 rounded-full shadow-sm border border-white/40">
+                        Petualangan Tree & Graph
+                    </h2>
+                    <p class="text-slate-600 mb-10 text-lg sm:text-xl font-medium italic">
+                        "Susun data. Temukan jalur. Pecahkan masalah!"
+                    </p>
+                    
+                    <div class="space-y-6 mb-10 relative z-10 bg-white/40 p-6 rounded-3xl border border-white/50">
+                        <input type="text" id="player-name" placeholder="Masukkan Nama Siswa..." 
+                            class="w-full sm:w-3/4 p-4 text-center rounded-2xl border-2 border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none text-lg font-semibold bg-white transition-all shadow-inner">
+                        
+                        <div>
+                            <p class="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wider">Pilih Kelompok:</p>
+                            <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
+                                ${[1,2,3,4,5,6,7,8].map(i => `
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="group" value="${i}" class="peer hidden" ${i===1?'checked':''}>
+                                        <div class="px-4 py-2 sm:px-5 sm:py-3 rounded-xl border-2 border-white bg-white/60 peer-checked:border-indigo-500 peer-checked:bg-indigo-500 peer-checked:text-white font-bold text-slate-600 shadow-sm transition-all hover:bg-white hover:-translate-y-1">
+                                            Klp ${i}
+                                        </div>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="startGame()" class="btn-3d btn-primary text-xl sm:text-2xl font-black px-12 py-5 rounded-full w-full sm:w-auto relative z-10">
+                        <i class="fas fa-play mr-3"></i> MULAI PETUALANGAN
+                    </button>
+                </div>
+            `;
+        }
+
+        window.startGame = function() {
+            const nameInput = document.getElementById('player-name').value.trim();
+            const groupInput = document.querySelector('input[name="group"]:checked').value;
+            if (nameInput) {
+                state.playerName = nameInput;
+                state.groupId = parseInt(groupInput);
+                changeState(GameState.BRIEFING);
+            } else {
+                const el = document.getElementById('player-name');
+                el.classList.add('pulse-danger', 'border-red-500');
+                setTimeout(() => el.classList.remove('pulse-danger', 'border-red-500'), 1000);
+            }
+        };
+
+        function renderBriefing(container) {
+            container.className = "min-h-screen pt-24 pb-20 px-4 sm:px-6 flex flex-col items-center justify-center";
+            container.innerHTML = `
+                <div class="max-w-3xl mx-auto bg-white p-8 sm:p-10 rounded-[2rem] shadow-xl slide-up border border-slate-100 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -z-10"></div>
+                    <div class="flex items-center mb-6">
+                        <div class="bg-indigo-100 p-4 rounded-2xl mr-5 shadow-inner border border-indigo-200">
+                            <i class="fas fa-robot text-4xl text-indigo-600"></i>
+                        </div>
+                        <h2 class="text-3xl font-black text-slate-800">Briefing Misi</h2>
+                    </div>
+                    <div class="prose prose-lg text-slate-700 leading-relaxed font-medium">
+                        <p>Selamat datang, <strong>${state.playerName}</strong>!</p>
+                        <p>Dunia digital menyimpan triliunan data. Agar data tidak kacau dan mudah dicari, data perlu disusun dengan struktur yang tepat.</p>
+                        <p>Dalam petualangan ini, kamu akan mempelajari dua struktur data paling penting di dunia komputer: 
+                           <span class="text-emerald-600 font-black bg-emerald-50 px-2 rounded border border-emerald-200">TREE (Pohon)</span> dan 
+                           <span class="text-blue-600 font-black bg-blue-50 px-2 rounded border border-blue-200">GRAPH (Graf)</span>.</p>
+                        <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl mt-6 flex items-start shadow-sm">
+                            <i class="fas fa-stopwatch text-amber-500 mt-1 mr-3 text-xl"></i>
+                            <p class="m-0 text-amber-800">Setiap misi memiliki <strong>Batas Waktu</strong>. Jika kehabisan waktu, kamu harus mencoba lagi! Selesaikan dengan cepat, kumpulkan XP, dan jadilah <strong>DATA MASTER!</strong></p>
+                        </div>
+                    </div>
+                    <div class="mt-10 text-center">
+                        <button onclick="nextLevel()" class="btn-3d btn-primary px-10 py-4 font-bold text-xl rounded-full">
+                            TERIMA MISI <i class="fas fa-rocket ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- STREAMING_CHUNK:Level 1 Setup... ---
+        function renderLevel1(container) {
+            const dataExamples = gameVariations[state.groupId].l1;
+            state.l1_completed = 0;
+
+            startTimer(45, () => {
+                showFeedback(false, "Waktu habis untuk mengidentifikasi data! Mari kita coba lagi.", "Waktu Habis ⏰", () => {
+                    renderLevel1(document.getElementById('game-container'));
+                });
+            });
+
+            let html = `
+                <div class="max-w-4xl mx-auto slide-up w-full">
+                    <div class="text-center mb-10">
+                        <span class="inline-block bg-indigo-100 text-indigo-800 font-bold px-4 py-1 rounded-full mb-3 text-sm tracking-widest uppercase shadow-sm">Misi 1</span>
+                        <h2 class="text-4xl font-black text-slate-800">Kenali Struktur Data</h2>
+                        <p class="text-slate-600 mt-4 text-lg bg-white p-4 rounded-xl shadow-sm border border-slate-100 inline-block">Temukan dan klik <strong>DUA (2) contoh</strong> di bawah ini yang merupakan <strong>data terstruktur</strong>.</p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            `;
+
+            dataExamples.forEach((ex, index) => {
+                html += `
+                    <div class="interactive-card bg-white p-6 rounded-2xl shadow-md border-2 border-slate-100 text-center h-full flex flex-col justify-between group" onclick="checkL1(${index}, ${ex.isData}, this)">
+                        <div>
+                            <div class="text-5xl mb-4 bg-slate-50 h-24 w-24 mx-auto rounded-full flex items-center justify-center shadow-inner group-hover:bg-indigo-50 transition-colors">
+                                ${ex.isData ? '📊' : '🗑️'}
+                            </div>
+                            <h3 class="font-bold text-xl text-slate-800 mb-2">${ex.text}</h3>
+                            <p class="text-slate-500 text-sm hidden-el desc-text mt-4 bg-slate-50 p-3 rounded-lg border border-slate-100">${ex.desc}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        window.checkL1 = function(index, isData, element) {
+            if (element.classList.contains('opacity-50')) return; 
+            
+            element.querySelector('.desc-text').classList.remove('hidden-el');
+            
+            if (isData) {
+                element.classList.remove('border-slate-100');
+                element.classList.add('border-emerald-500', 'bg-emerald-50', 'opacity-50', 'cursor-not-allowed');
+                element.onclick = null;
+                addXP(10);
+                state.l1_completed++;
+                
+                if (state.l1_completed === 1) {
+                    showFeedback(true, "Tepat sekali! Masih ada 1 lagi data terstruktur di layar. Ayo temukan yang satu lagi!", "Satu Lagi! 🔍");
+                } else if (state.l1_completed === 2) {
+                    awardBadge(BADGES.BEGINNER);
+                    showFeedback(true, "Luar biasa! Kamu berhasil menemukan kedua data terstruktur.", "Misi Selesai! 🎉", () => {
+                        showNextButton();
+                    });
+                }
+            } else {
+                element.classList.remove('border-slate-100');
+                element.classList.add('border-rose-500', 'bg-rose-50', 'pulse-danger');
+                setTimeout(() => {
+                    element.classList.remove('pulse-danger', 'border-rose-500', 'bg-rose-50');
+                    element.classList.add('border-slate-100');
+                }, 1000);
+                showFeedback(false, "Belum tepat. Data ini acak dan tidak memiliki pola, hubungan, atau struktur yang jelas.", "Coba Perhatikan Lagi");
+            }
+        };
+
+        // --- STREAMING_CHUNK:Level 2 Setup... ---
+        function renderLevel2(container) {
+            state.l2_completed = 0;
+            const l2_tasks = [
+                { type: 'root', instr: "Misi A: Klik <strong>ROOT</strong><br><span class='text-sm font-medium text-slate-600'>(Simpul paling awal/atas)</span>" },
+                { type: 'leaf', instr: "Misi B: Klik salah satu <strong>LEAF</strong><br><span class='text-sm font-medium text-slate-600'>(Simpul ujung yang tidak punya anak/cabang bawah)</span>" },
+                { type: 'parent', instr: "Misi C: Klik salah satu <strong>PARENT</strong><br><span class='text-sm font-medium text-slate-600'>(Simpul yang memiliki anak/cabang di bawahnya)</span>" }
+            ];
+
+            startTimer(30, () => {
+                showFeedback(false, "Waktu habis! Ayo lebih cepat mencari bagian Tree.", "Waktu Habis ⏰", () => {
+                    renderLevel2(document.getElementById('game-container'));
+                });
+            });
+
+            container.innerHTML = `
+                <div class="max-w-4xl mx-auto slide-up w-full">
+                    <div class="text-center mb-8">
+                        <span class="inline-block bg-emerald-100 text-emerald-800 font-bold px-4 py-1 rounded-full mb-3 text-sm tracking-widest uppercase shadow-sm">Misi 2</span>
+                        <h2 class="text-4xl font-black text-slate-800">Hutan Tree 🌳</h2>
+                        <p class="text-slate-600 mt-2 text-lg">Tree digunakan untuk menyusun data bertingkat (hierarki).</p>
+                    </div>
+                    
+                    <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-6 text-center mb-8 shadow-md relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-2 h-full bg-indigo-500"></div>
+                        <p class="text-2xl font-black text-indigo-800" id="l2-instruction">${l2_tasks[0].instr}</p>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-3xl shadow-xl flex justify-center border border-slate-100 overflow-x-auto relative">
+                        <svg width="400" height="300" viewBox="0 0 400 300" class="mx-auto drop-shadow-md">
+                            <line x1="200" y1="40" x2="100" y2="120" stroke="#cbd5e1" stroke-width="6" />
+                            <line x1="200" y1="40" x2="300" y2="120" stroke="#cbd5e1" stroke-width="6" />
+                            <line x1="100" y1="120" x2="50" y2="200" stroke="#cbd5e1" stroke-width="6" />
+                            <line x1="100" y1="120" x2="150" y2="200" stroke="#cbd5e1" stroke-width="6" />
+                            <line x1="300" y1="120" x2="250" y2="200" stroke="#cbd5e1" stroke-width="6" />
+                            <line x1="300" y1="120" x2="350" y2="200" stroke="#cbd5e1" stroke-width="6" />
+                            
+                            <g class="svg-interactive group" onclick="checkL2('root', this)">
+                                <circle cx="200" cy="40" r="30" fill="#ffffff" stroke="#4f46e5" stroke-width="5" class="transition-colors group-hover:fill-indigo-50"/>
+                                <text x="200" y="47" text-anchor="middle" font-weight="900" font-size="20" fill="#334155">A</text>
+                            </g>
+                            <g class="svg-interactive group" onclick="checkL2('parent', this)">
+                                <circle cx="100" cy="120" r="30" fill="#ffffff" stroke="#4f46e5" stroke-width="5" class="transition-colors group-hover:fill-indigo-50"/>
+                                <text x="100" y="127" text-anchor="middle" font-weight="900" font-size="20" fill="#334155">B</text>
+                            </g>
+                            <g class="svg-interactive group" onclick="checkL2('parent', this)">
+                                <circle cx="300" cy="120" r="30" fill="#ffffff" stroke="#4f46e5" stroke-width="5" class="transition-colors group-hover:fill-indigo-50"/>
+                                <text x="300" y="127" text-anchor="middle" font-weight="900" font-size="20" fill="#334155">C</text>
+                            </g>
+                            <g class="svg-interactive group" onclick="checkL2('leaf', this)">
+                                <circle cx="50" cy="200" r="30" fill="#ffffff" stroke="#4f46e5" stroke-width="5" class="transition-colors group-hover:fill-indigo-50"/>
+                                <text x="50" y="207" text-anchor="middle" font-weight="900" font-size="20" fill="#334155">D</text>
+                            </g>
+                            <g class="svg-interactive group" onclick="checkL2('leaf', this)">
+                                <circle cx="150" cy="200" r="30" fill="#ffffff" stroke="#4f46e5" stroke-width="5" class="transition-colors group-hover:fill-indigo-50"/>
+                                <text x="150" y="207" text-anchor="middle" font-weight="900" font-size="20" fill="#334155">E</text>
+                            </g>
+                            <g class="svg-interactive group" onclick="checkL2('leaf', this)">
+                                <circle cx="250" cy="200" r="30" fill="#ffffff" stroke="#4f46e5" stroke-width="5" class="transition-colors group-hover:fill-indigo-50"/>
+                                <text x="250" y="207" text-anchor="middle" font-weight="900" font-size="20" fill="#334155">F</text>
+                            </g>
+                            <g class="svg-interactive group" onclick="checkL2('leaf', this)">
+                                <circle cx="350" cy="200" r="30" fill="#ffffff" stroke="#4f46e5" stroke-width="5" class="transition-colors group-hover:fill-indigo-50"/>
+                                <text x="350" y="207" text-anchor="middle" font-weight="900" font-size="20" fill="#334155">G</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            `;
+
+            window.checkL2 = function(type, el) {
+                const typeNeeded = l2_tasks[state.l2_completed].type;
+                let isCorrect = false;
+                let explanation = "";
+
+                if (typeNeeded === 'root' && type === 'root') { isCorrect = true; explanation = "Tepat! Root adalah simpul paling awal/teratas."; }
+                else if (typeNeeded === 'leaf' && type === 'leaf') { isCorrect = true; explanation = "Benar! Leaf (Daun) adalah simpul ujung yang tidak memiliki anak."; }
+                else if (typeNeeded === 'parent' && (type === 'parent' || type === 'root')) { isCorrect = true; explanation = "Bagus! Parent adalah simpul yang memiliki cabang ke bawah."; }
+
+                if (isCorrect) {
+                    el.querySelector('circle').setAttribute('fill', '#d1fae5'); 
+                    el.querySelector('circle').setAttribute('stroke', '#10b981'); 
+                    addXP(10);
+                    state.l2_completed++;
+                    
+                    if (state.l2_completed < l2_tasks.length) {
+                        showFeedback(true, explanation + ` Ayo lanjut ke tahap ${state.l2_completed + 1} dari 3.`, "Langkah Bagus! 🌳", () => {
+                            document.getElementById('l2-instruction').innerHTML = l2_tasks[state.l2_completed].instr;
+                            startTimer(30, () => {
+                                showFeedback(false, "Waktu habis! Ayo lebih cepat mencari bagian Tree.", "Waktu Habis ⏰", () => renderLevel2(document.getElementById('game-container')));
+                            });
+                        });
+                    } else {
+                        showFeedback(true, explanation, "Misi Selesai! 🎉", () => {
+                            document.getElementById('l2-instruction').innerHTML = "Bagus! Kamu sudah mengenali komponen Root, Parent, dan Leaf.";
+                            document.getElementById('l2-instruction').parentElement.className = "bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-6 text-center mb-8 shadow-md relative overflow-hidden text-emerald-800 font-bold";
+                            showNextButton();
+                        });
+                    }
+                } else {
+                    showFeedback(false, `Kamu mengklik bagian yang salah. Saat ini kamu harus mencari: ${typeNeeded.toUpperCase()}`);
+                }
+            };
+        }
+
+        // --- STREAMING_CHUNK:Level 3 Setup... ---
+        function renderLevel3(container) {
+            state.l3_completed = false;
+            const targetData = gameVariations[state.groupId].l3;
+            let currentPath = [];
+            
+            startTimer(45, () => {
+                showFeedback(false, "Waktu habis! Kamu tersesat di labirin folder. Ayo ulang dari awal.", "Waktu Habis ⏰", () => {
+                    renderLevel3(document.getElementById('game-container'));
+                });
+            });
+
+            container.innerHTML = `
+                <div class="max-w-4xl mx-auto slide-up w-full">
+                    <div class="text-center mb-8">
+                        <span class="inline-block bg-emerald-100 text-emerald-800 font-bold px-4 py-1 rounded-full mb-3 text-sm tracking-widest uppercase shadow-sm">Misi 3</span>
+                        <h2 class="text-4xl font-black text-slate-800">Labirin Tree 🧩</h2>
+                    </div>
+                    
+                    <div class="bg-slate-800 text-white p-6 rounded-2xl shadow-xl mb-8 flex flex-col sm:flex-row items-center justify-between border-4 border-slate-700">
+                        <div class="mb-4 sm:mb-0">
+                            <p class="text-slate-400 font-bold text-sm uppercase mb-1">Misi Kamu:</p>
+                            <p class="text-xl">Temukan file <span class="text-amber-400 font-black bg-slate-900 px-3 py-1 rounded-lg ml-2 border border-amber-500/50 shadow-inner">📄 ${targetData.target}</span></p>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border-2 border-slate-700 w-full sm:w-auto shadow-inner">
+                            <p class="text-slate-500 text-xs font-bold mb-1 uppercase">Path (Jalur) Saat Ini:</p>
+                            <p id="current-path" class="font-mono text-emerald-400 text-sm">/Root</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="folder-grid">
+                        <!-- Folders will be injected here -->
+                    </div>
+                </div>
+            `;
+
+            const structure = {
+                "Root": ["Dokumen", "Sistem", "Aplikasi"],
+                "Dokumen": ["Informatika", "Matematika", "B.Indonesia", "IPA", "Sejarah", "Bahasa", "Olahraga", "Prakarya"],
+                "Informatika": ["Tugas", "Materi"],
+                "Matematika": ["Tugas", "Materi"],
+                "B.Indonesia": ["Tugas"],
+                "IPA": ["Biologi", "Fisika"],
+                "Sejarah": ["Materi"],
+                "Bahasa": ["Tugas"],
+                "Olahraga": ["Video"],
+                "Prakarya": ["Tugas"],
+                "Tugas": ["Tugas-Tree.docx", "Puisi.txt", "Pidato.docx", "Kerajinan.jpg"],
+                "Materi": ["Rumus.pdf", "Revolusi.pdf"],
+                "Biologi": ["Bakteri.jpg"],
+                "Video": ["Senam.mp4"]
+            };
+
+            function renderOptions(node) {
+                const grid = document.getElementById('folder-grid');
+                grid.innerHTML = '';
+                document.getElementById('current-path').innerText = '/Root' + (currentPath.length > 0 ? '/' + currentPath.join('/') : '');
+
+                let options = structure[node] || [];
+                if (node === "Tugas" || node === "Materi" || node === "Biologi" || node === "Video") {
+                    options = [targetData.target, "Data_Lain.txt"]; 
+                }
+
+                options.forEach(opt => {
+                    const isFile = opt.includes('.');
+                    const icon = isFile ? '📄' : '📁';
+                    const color = isFile ? 'text-blue-600 bg-blue-50 border-blue-200 hover:border-blue-400' : 'text-amber-600 bg-amber-50 border-amber-200 hover:border-amber-400';
+                    
+                    grid.innerHTML += `
+                        <button class="interactive-card ${color} border-2 p-5 rounded-2xl shadow-sm flex items-center w-full text-left bg-white" onclick="handleFolderClick('${opt}', ${isFile})">
+                            <span class="text-4xl mr-4 drop-shadow-sm">${icon}</span>
+                            <span class="text-xl font-bold text-slate-700">${opt}</span>
+                        </button>
+                    `;
+                });
+            }
+
+            window.handleFolderClick = function(opt, isFile) {
+                currentPath.push(opt);
+                
+                if (isFile) {
+                    if (opt === targetData.target) {
+                        addXP(20);
+                        awardBadge(BADGES.TREE);
+                        showFeedback(true, `Sistem manajemen file dan folder di komputermu adalah salah satu contoh nyata penerapan struktur Tree!`, "File Ditemukan! 🎉", () => {
+                            showNextButton();
+                        });
+                    } else {
+                        currentPath.pop(); 
+                        showFeedback(false, "Ini bukan file yang kita cari.");
+                    }
+                } else {
+                    if (targetData.path.includes(opt)) {
+                        renderOptions(opt);
+                    } else {
+                        currentPath.pop();
+                        showFeedback(false, "Folder ini sepertinya tidak menyimpan file yang dituju. Coba folder lain.");
+                    }
+                }
+            };
+
+            renderOptions("Root");
+        }
+
+        // --- STREAMING_CHUNK:Level 4 Setup... ---
+        function renderLevel4(container) {
+            state.l4_completed = 0;
+            const l4_tasks = [
+                { type: 'node', instr: "Misi A: Klik salah satu <strong>NODE (Simpul)</strong><br><span class='text-sm font-medium text-slate-600'>(Lingkaran yang mewakili tempat/objek)</span>" },
+                { type: 'edge', instr: "Misi B: Klik salah satu <strong>EDGE (Ruas)</strong><br><span class='text-sm font-medium text-slate-600'>(Garis yang menghubungkan antar Node)</span>" }
+            ];
+
+            startTimer(30, () => {
+                showFeedback(false, "Waktu habis! Harus lebih teliti melihat node dan edge.", "Waktu Habis ⏰", () => {
+                    renderLevel4(document.getElementById('game-container'));
+                });
+            });
+
+            container.innerHTML = `
+                <div class="max-w-4xl mx-auto slide-up w-full">
+                    <div class="text-center mb-8">
+                        <span class="inline-block bg-blue-100 text-blue-800 font-bold px-4 py-1 rounded-full mb-3 text-sm tracking-widest uppercase shadow-sm">Misi 4</span>
+                        <h2 class="text-4xl font-black text-slate-800">Kota Graph 🗺️</h2>
+                        <p class="text-slate-600 mt-2 text-lg">Graph digunakan untuk data yang saling terhubung bebas (seperti peta jalan).</p>
+                    </div>
+                    
+                    <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 text-center mb-8 shadow-md relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
+                        <p class="text-2xl font-black text-blue-800" id="l4-instruction">${l4_tasks[0].instr}</p>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-3xl shadow-xl flex justify-center border border-slate-100 overflow-x-auto">
+                        <svg width="400" height="300" viewBox="0 0 400 300" class="mx-auto drop-shadow-md">
+                            <g class="svg-interactive group" onclick="checkL4('edge', this)">
+                                <line x1="100" y1="100" x2="300" y2="100" stroke="#cbd5e1" stroke-width="16" stroke-linecap="round" class="transition-colors group-hover:stroke-blue-200"/>
+                            </g>
+                            <g class="svg-interactive group" onclick="checkL4('edge', this)">
+                                <line x1="100" y1="100" x2="200" y2="220" stroke="#cbd5e1" stroke-width="16" stroke-linecap="round" class="transition-colors group-hover:stroke-blue-200"/>
+                            </g>
+                            <g class="svg-interactive group" onclick="checkL4('edge', this)">
+                                <line x1="300" y1="100" x2="200" y2="220" stroke="#cbd5e1" stroke-width="16" stroke-linecap="round" class="transition-colors group-hover:stroke-blue-200"/>
+                            </g>
+                            
+                            <g class="svg-interactive group" onclick="checkL4('node', this)">
+                                <circle cx="100" cy="100" r="40" fill="#ffffff" stroke="#3b82f6" stroke-width="6" class="transition-colors group-hover:fill-blue-50"/>
+                                <text x="100" y="107" text-anchor="middle" font-weight="900" font-size="18" fill="#1e293b">Rumah</text>
+                            </g>
+                            <g class="svg-interactive group" onclick="checkL4('node', this)">
+                                <circle cx="300" cy="100" r="40" fill="#ffffff" stroke="#3b82f6" stroke-width="6" class="transition-colors group-hover:fill-blue-50"/>
+                                <text x="300" y="107" text-anchor="middle" font-weight="900" font-size="18" fill="#1e293b">Toko</text>
+                            </g>
+                            <g class="svg-interactive group" onclick="checkL4('node', this)">
+                                <circle cx="200" cy="220" r="40" fill="#ffffff" stroke="#3b82f6" stroke-width="6" class="transition-colors group-hover:fill-blue-50"/>
+                                <text x="200" y="227" text-anchor="middle" font-weight="900" font-size="18" fill="#1e293b">Sekolah</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            `;
+
+            window.checkL4 = function(type, el) {
+                const typeNeeded = l4_tasks[state.l4_completed].type;
+                
+                if (type === typeNeeded) {
+                    if(type === 'node') {
+                        el.querySelector('circle').setAttribute('fill', '#dbeafe');
+                        el.querySelector('circle').setAttribute('stroke', '#2563eb');
+                    }
+                    if(type === 'edge') {
+                        el.querySelector('line').setAttribute('stroke', '#3b82f6');
+                    }
+                    
+                    addXP(10);
+                    state.l4_completed++;
+                    
+                    if (state.l4_completed < l4_tasks.length) {
+                        showFeedback(true, (type==='node' ? "Benar! Node adalah titiknya." : "Benar! Edge adalah garis penghubungnya.") + ` Masih ada misi selanjutnya!`, "Langkah Bagus! 🗺️", () => {
+                            document.getElementById('l4-instruction').innerHTML = l4_tasks[state.l4_completed].instr;
+                            startTimer(30, () => {
+                                showFeedback(false, "Waktu habis! Harus lebih teliti melihat node dan edge.", "Waktu Habis ⏰", () => renderLevel4(document.getElementById('game-container')));
+                            });
+                        });
+                    } else {
+                        showFeedback(true, (type==='node' ? "Node adalah titiknya." : "Edge adalah garis penghubungnya."), "Misi Selesai! 🎉", () => {
+                            document.getElementById('l4-instruction').innerHTML = "Sempurna! Kamu telah memahami komponen utama Graph (Node & Edge).";
+                            document.getElementById('l4-instruction').parentElement.className = "bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 text-center mb-8 shadow-md relative overflow-hidden text-blue-800 font-bold";
+                            showNextButton();
+                        });
+                    }
+                } else {
+                    showFeedback(false, `Kamu mengklik bagian yang salah. Perhatikan misi, saat ini kamu harus mencari: ${typeNeeded.toUpperCase()}`);
+                }
+            };
+        }
+
+        // --- STREAMING_CHUNK:Level 5 Setup... ---
+        function renderLevel5(container) {
+            const l5Data = gameVariations[state.groupId].l5;
+            let minPath = l5Data[0];
+            l5Data.forEach(p => { if(p.dist < minPath.dist) minPath = p; });
+
+            startTimer(45, () => {
+                 showFeedback(false, "Waktu habis! Rute belum terpilih.", "Waktu Habis ⏰", () => {
+                     renderLevel5(document.getElementById('game-container'));
+                 });
+            });
+
+            let html = `
+                <div class="max-w-4xl mx-auto slide-up w-full">
+                    <div class="text-center mb-8">
+                        <span class="inline-block bg-blue-100 text-blue-800 font-bold px-4 py-1 rounded-full mb-3 text-sm tracking-widest uppercase shadow-sm">Misi 5</span>
+                        <h2 class="text-4xl font-black text-slate-800">Cari Rute Tercepat 🚗</h2>
+                        <p class="text-slate-600 mt-2 text-lg">Aplikasi Google Maps menggunakan prinsip Graph untuk mencari rute.</p>
+                    </div>
+
+                    <div class="bg-indigo-50 p-6 rounded-2xl border-2 border-indigo-200 mb-8 shadow-md relative overflow-hidden">
+                         <div class="absolute top-0 left-0 w-2 h-full bg-indigo-500"></div>
+                        <p class="text-xl font-bold text-center text-indigo-800">Pilih rute dengan total jarak paling pendek (angka terkecil)!</p>
+                    </div>
+
+                    <div class="grid gap-4">
+            `;
+
+            l5Data.forEach((path, idx) => {
+                html += `
+                    <button class="interactive-card bg-white p-6 rounded-2xl shadow-sm border-2 border-slate-200 hover:border-indigo-500 text-left flex flex-col sm:flex-row justify-between items-start sm:items-center w-full group gap-4" onclick="checkL5(${idx}, ${path.dist === minPath.dist})">
+                        <div class="flex items-center w-full">
+                            <div class="bg-slate-100 p-4 rounded-full mr-4 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors shadow-inner">
+                                <i class="fas fa-route text-slate-500 text-xl group-hover:text-indigo-600"></i>
+                            </div>
+                            <span class="text-lg font-bold text-slate-700 leading-tight">${path.path}</span>
+                        </div>
+                        <div class="bg-amber-100 text-amber-700 px-5 py-3 rounded-xl font-black text-xl border border-amber-200 shadow-sm whitespace-nowrap self-end sm:self-auto">
+                            ${path.dist} KM
+                        </div>
+                    </button>
+                `;
+            });
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+
+            window.checkL5 = function(idx, isCorrect) {
+                if (isCorrect) {
+                    addXP(20);
+                    awardBadge(BADGES.GRAPH);
+                    showFeedback(true, "Itu adalah rute terpendek! Algoritma pencarian rute pada Graph bekerja dengan prinsip seperti ini.", "Pilihan Cerdas!", () => {
+                        showNextButton();
+                    });
+                } else {
+                    showFeedback(false, "Ada rute yang jarak totalnya lebih pendek lho. Coba hitung lagi.");
+                }
+            };
+        }
+
+        // --- STREAMING_CHUNK:Level 6 Setup... ---
+        function renderLevel6(container) {
+            window.l6_currentIndex = 0;
+            window.l6_questions = gameVariations[state.groupId].l6;
+            renderL6Question(container);
+        }
+
+        function renderL6Question(container) {
+            if (window.l6_currentIndex >= window.l6_questions.length) {
+                showNextButton();
+                container.innerHTML = `
+                    <div class="max-w-2xl mx-auto text-center slide-up mt-10 p-10 bg-white rounded-3xl shadow-xl border border-slate-100">
+                        <div class="text-7xl mb-6 pop">🎉</div>
+                        <h2 class="text-3xl font-black text-slate-800 mb-4">Luar Biasa!</h2>
+                        <p class="text-lg text-slate-600 font-medium bg-slate-50 p-4 rounded-xl border border-slate-100">Kamu bisa membedakan mana struktur <strong>Tree (Hierarki/Bertingkat)</strong> dan mana struktur <strong>Graph (Jaringan)</strong> dengan sangat baik.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            startTimer(25, () => {
+                showFeedback(false, "Waktu habis! Mari kita coba soal ini lagi.", "Waktu Habis ⏰", () => {
+                    renderL6Question(document.getElementById('game-container'));
+                });
+            });
+
+            const q = window.l6_questions[window.l6_currentIndex];
+
+            container.innerHTML = `
+                <div class="max-w-4xl mx-auto slide-up w-full text-center">
+                    <span class="inline-block bg-purple-100 text-purple-800 font-bold px-4 py-1 rounded-full mb-3 text-sm tracking-widest uppercase shadow-sm">Misi 6</span>
+                    <h2 class="text-4xl font-black text-slate-800 mb-8">Tree atau Graph? ⚔️</h2>
+                    
+                    <p class="text-slate-500 font-bold mb-2 uppercase tracking-wider text-sm">Studi Kasus ${window.l6_currentIndex + 1} dari ${window.l6_questions.length}:</p>
+                    <div class="bg-white p-8 sm:p-12 rounded-3xl shadow-xl mb-10 border border-slate-100 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
+                        <h3 class="text-2xl sm:text-3xl font-black text-slate-800 leading-snug">${q.q}</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                        <button onclick="checkL6('TREE')" class="interactive-card bg-emerald-50 border-4 border-emerald-100 p-8 rounded-3xl flex flex-col items-center hover:bg-emerald-100 hover:border-emerald-300 shadow-md">
+                            <span class="text-7xl mb-4 drop-shadow-sm">🌳</span>
+                            <span class="text-3xl font-black text-emerald-700">TREE</span>
+                        </button>
+                        <button onclick="checkL6('GRAPH')" class="interactive-card bg-blue-50 border-4 border-blue-100 p-8 rounded-3xl flex flex-col items-center hover:bg-blue-100 hover:border-blue-300 shadow-md">
+                            <span class="text-7xl mb-4 drop-shadow-sm">🗺️</span>
+                            <span class="text-3xl font-black text-blue-700">GRAPH</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            window.checkL6 = function(answer) {
+                if (answer === q.a) {
+                    addXP(10);
+                    showFeedback(true, q.exp, "Benar Sekali!", () => {
+                        window.l6_currentIndex++;
+                        renderL6Question(document.getElementById('game-container'));
+                    });
+                } else {
+                    showFeedback(false, `Ingat: Tree digunakan untuk data bertingkat/hierarki. Graph digunakan untuk data yang saling terhubung bebas. \n\nPenjelasan: ${q.exp}`);
+                }
+            };
+        }
+
+        // --- STREAMING_CHUNK:Final Mission Setup... ---
+        function renderFinalMission(container) {
+            const fmData = gameVariations[state.groupId].fm;
+            window.fm_currentIndex = 0;
+            
+            function renderFMQuestion() {
+                if (window.fm_currentIndex >= fmData.length) {
+                    awardBadge(BADGES.PROBLEM);
+                    showFeedback(true, "Kamu berhasil mengidentifikasi struktur data yang tepat untuk masalah-masalah tersebut!", "Problem Solver! 🧠", () => {
+                        changeState(GameState.FINAL_QUIZ);
+                    });
+                    return;
+                }
+
+                startTimer(40, () => {
+                     showFeedback(false, "Waktu habis! Segera tentukan pilihanmu.", "Waktu Habis ⏰", () => {
+                          renderFMQuestion();
+                     });
+                });
+
+                const q = fmData[window.fm_currentIndex];
+                container.innerHTML = `
+                    <div class="max-w-4xl mx-auto slide-up w-full text-center">
+                        <span class="inline-block bg-amber-100 text-amber-800 font-bold px-4 py-1 rounded-full mb-3 text-sm tracking-widest uppercase shadow-sm">Misi Terakhir</span>
+                        <h2 class="text-4xl font-black text-slate-800 mb-8">Data Master Challenge 🏆</h2>
+                        
+                        <div class="bg-indigo-50 border border-indigo-200 p-6 rounded-2xl mb-8 shadow-inner">
+                            <p class="text-xl font-bold text-indigo-900">Di sebuah sekolah, terdapat kebutuhan pengelolaan data. Struktur apa yang paling cocok digunakan?</p>
+                        </div>
+                        
+                        <div class="bg-white p-8 sm:p-12 rounded-3xl shadow-xl mb-8 border border-slate-100 relative overflow-hidden">
+                             <div class="absolute -right-10 -bottom-10 text-9xl opacity-5">🏫</div>
+                            <h3 class="text-2xl font-black text-slate-800 leading-tight">"${q.q}"</h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                            <button onclick="checkFM('TREE')" class="btn-3d btn-secondary py-6 text-2xl font-black rounded-2xl flex items-center justify-center gap-3">
+                                <span class="text-4xl">🌳</span> TREE
+                            </button>
+                            <button onclick="checkFM('GRAPH')" class="btn-3d btn-primary py-6 text-2xl font-black rounded-2xl flex items-center justify-center gap-3">
+                                <span class="text-4xl">🗺️</span> GRAPH
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                window.checkFM = function(answer) {
+                    if (answer === q.type) {
+                        addXP(25);
+                        showFeedback(true, "Pilihan arsitektur data yang tepat!", "Bagus!", () => {
+                            window.fm_currentIndex++;
+                            renderFMQuestion();
+                        });
+                    } else {
+                        showFeedback(false, "Pikirkan lagi apakah strukturnya bertingkat (Tree) atau jaringan yang saling terhubung (Graph).");
+                    }
+                };
+            }
+            renderFMQuestion();
+        }
+
+        // --- STREAMING_CHUNK:Final Quiz Setup... ---
+        function renderFinalQuiz(container) {
+            window.quiz_currentIndex = 0;
+            window.quiz_data = gameVariations[state.groupId].quiz;
+            renderQuizQuestion(container);
+        }
+
+        function renderQuizQuestion(container) {
+            if (window.quiz_currentIndex >= window.quiz_data.length) {
+                stopTimer();
+                awardBadge(BADGES.MASTER);
+                setTimeout(() => changeState(GameState.RESULT), 500);
+                return;
+            }
+
+            startTimer(30, () => {
+                 showFeedback(false, "Waktu habis untuk soal ini! Kamu kehilangan kesempatan poin XP kali ini.", "Waktu Habis ⏰", () => {
+                     window.quiz_currentIndex++;
+                     renderQuizQuestion(document.getElementById('game-container'));
+                 });
+            });
+
+            const q = window.quiz_data[window.quiz_currentIndex];
+            
+            let html = `
+                <div class="max-w-3xl mx-auto slide-up w-full">
+                    <div class="text-center mb-8">
+                        <span class="inline-block bg-slate-800 text-white font-bold px-4 py-1 rounded-full mb-3 text-sm tracking-widest uppercase shadow-md">Ujian Akhir</span>
+                        <h2 class="text-4xl font-black text-slate-800">Kuis Final 🧠</h2>
+                        <p class="text-slate-500 font-bold mt-2">Pertanyaan ${window.quiz_currentIndex + 1} dari ${window.quiz_data.length}</p>
+                    </div>
+
+                    <div class="bg-white p-8 sm:p-10 rounded-3xl shadow-xl mb-8 border border-slate-100">
+                        <h3 class="text-2xl font-bold text-slate-800 leading-relaxed">${q.q}</h3>
+                    </div>
+
+                    <div class="grid gap-4">
+            `;
+
+            q.options.forEach((opt, idx) => {
+                html += `
+                    <button class="interactive-card bg-slate-50 border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-800 text-left p-5 rounded-2xl text-lg font-bold text-slate-700 transition-colors w-full flex items-center group" 
+                            onclick="checkQuizAnswer(${idx})">
+                        <span class="inline-flex items-center justify-center bg-white text-slate-600 rounded-lg w-10 h-10 mr-4 shadow-sm border border-slate-200 group-hover:bg-indigo-500 group-hover:text-white group-hover:border-indigo-600 transition-colors shrink-0">
+                            ${String.fromCharCode(65+idx)}
+                        </span>
+                        <span>${opt}</span>
+                    </button>
+                `;
+            });
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        window.checkQuizAnswer = function(selectedIndex) {
+            stopTimer();
+            const q = window.quiz_data[window.quiz_currentIndex];
+            if (selectedIndex === q.a) {
+                addXP(20);
+                state.final_quiz_score += 20;
+                showFeedback(true, "Jawaban kamu tepat!", "Benar!", () => {
+                    window.quiz_currentIndex++;
+                    renderQuizQuestion(document.getElementById('game-container'));
+                });
+            } else {
+                showFeedback(false, `Jawaban yang benar adalah: ${q.options[q.a]}`, "Belum Tepat", () => {
+                    window.quiz_currentIndex++;
+                    renderQuizQuestion(document.getElementById('game-container'));
+                });
+            }
+        };
+
+        // --- STREAMING_CHUNK:Result Screen Setup... ---
+        function renderResult(container) {
+            container.className = "min-h-screen pt-20 pb-20 px-4 sm:px-6 flex flex-col items-center justify-center bg-cyber";
+            
+            let rank = "";
+            const percent = Math.min(100, Math.round((state.xp / 220) * 100)); 
+
+            if (percent >= 90) rank = "🏆 DATA MASTER";
+            else if (percent >= 75) rank = "🥇 DATA EXPLORER";
+            else if (percent >= 60) rank = "🥈 DATA ADVENTURER";
+            else rank = "🌱 DATA BEGINNER";
+
+            let html = `
+                <div class="max-w-2xl mx-auto glass-panel p-8 sm:p-12 rounded-[3rem] shadow-2xl text-center slide-up relative overflow-hidden w-full border border-white/20">
+                    <div class="text-7xl mb-6 pop">🎉</div>
+                    <h2 class="text-4xl sm:text-5xl font-black text-slate-800 mb-2">Petualangan Selesai!</h2>
+                    <p class="text-xl text-slate-600 font-bold mb-8 bg-white/50 inline-block px-6 py-2 rounded-full shadow-sm">${state.playerName} | Kelompok ${state.groupId}</p>
+
+                    <div class="bg-indigo-50/80 rounded-3xl p-6 sm:p-8 mb-8 border-2 border-white/60 shadow-lg backdrop-blur-sm">
+                        <h3 class="text-3xl font-black text-indigo-700 mb-6 drop-shadow-sm">${rank}</h3>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
+                                <p class="text-slate-400 text-sm font-bold uppercase mb-1">Total XP</p>
+                                <p class="text-4xl font-black text-amber-500 drop-shadow-sm">${state.xp}</p>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
+                                <p class="text-slate-400 text-sm font-bold uppercase mb-1">Misi Selesai</p>
+                                <p class="text-4xl font-black text-emerald-500 drop-shadow-sm">8/8</p>
+                            </div>
+                        </div>
+
+                        <div class="text-left bg-white/60 p-5 rounded-2xl border border-white/50">
+                            <p class="text-slate-500 text-sm font-bold uppercase mb-4 text-center tracking-widest">Koleksi Badge:</p>
+                            <div class="flex flex-wrap justify-center gap-3">
+            `;
+
+            if (state.badges.length === 0) {
+                html += `<span class='text-slate-400 italic font-medium'>Belum ada badge</span>`;
+            } else {
+                state.badges.forEach(b => {
+                    html += `<div class="bg-white px-4 py-2 rounded-xl shadow-sm font-bold flex items-center gap-2 border border-slate-100 ${b.color} hover:-translate-y-1 transition-transform cursor-default">
+                                <span class="text-xl">${b.icon}</span> <span>${b.name}</span>
+                             </div>`;
+                });
+            }
+
+            html += `
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-slate-700 font-medium text-lg mb-10 leading-relaxed px-4 bg-white/40 p-4 rounded-2xl border border-white/30">
+                        Hebat! Kamu sudah memahami bagaimana <strong>Tree</strong> dan <strong>Graph</strong> digunakan untuk mengorganisasi data dan menyelesaikan masalah dalam komputasi.
+                    </p>
+
+                    <button onclick="resetGame()" class="btn-3d btn-primary px-10 py-5 text-xl font-black rounded-full w-full sm:w-auto shadow-xl">
+                        <i class="fas fa-home mr-2"></i> KEMBALI KE HOME
+                    </button>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
