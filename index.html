@@ -927,11 +927,46 @@
             const targetData = gameVariations[state.groupId].l3;
             let currentPath = [];
             
-            startTimer(45, () => {
-                showFeedback(false, "Waktu habis! Kamu tersesat di labirin folder. Ayo ulang dari awal.", "Waktu Habis ⏰", () => {
+            startTimer(60, () => {
+                showFeedback(false, "Waktu habis! Kamu terlalu lama tersesat di labirin folder. Ayo ulang navigasinya dari awal.", "Waktu Habis ⏰", () => {
                     renderLevel3(document.getElementById('game-container'));
                 });
             });
+
+            // Struktur File System Terpusat (Bisa ditelusuri penuh)
+            const fileSystem = {
+                "Dokumen": {
+                    "Informatika": {
+                        "Tugas": ["Tugas-Tree.docx", "Catatan.txt"],
+                        "Materi": ["Modul1.pdf", "Slide.pptx"]
+                    },
+                    "Matematika": {
+                        "Tugas": ["LatihanSoal.pdf", "PR.docx"],
+                        "Materi": ["Rumus.pdf", "Geometri.pdf"]
+                    },
+                    "B.Indonesia": {
+                        "Tugas": ["Puisi.txt", "Cerpen.docx"]
+                    },
+                    "IPA": {
+                        "Biologi": ["Bakteri.jpg", "Sel.pdf"],
+                        "Fisika": ["Gaya.pdf", "Rumus_Fisika.txt"]
+                    },
+                    "Sejarah": {
+                        "Materi": ["Revolusi.pdf", "Kerajaan.docx"]
+                    },
+                    "Bahasa": {
+                        "Tugas": ["Pidato.docx", "Essay.txt"]
+                    },
+                    "Olahraga": {
+                        "Video": ["Senam.mp4", "Pemanasan.mp4"]
+                    },
+                    "Prakarya": {
+                        "Tugas": ["Kerajinan.jpg", "Proposal.docx"]
+                    }
+                },
+                "Downloads": ["Software.exe", "Game.zip"],
+                "Gambar": ["Foto_Kelas.jpg", "Logo_Sekolah.png"]
+            };
 
             container.innerHTML = `
                 <div class="max-w-4xl mx-auto slide-up w-full">
@@ -940,89 +975,109 @@
                         <h2 class="text-4xl font-black text-slate-800">Labirin Tree 🧩</h2>
                     </div>
                     
-                    <div class="bg-slate-800 text-white p-6 rounded-2xl shadow-xl mb-8 flex flex-col sm:flex-row items-center justify-between border-4 border-slate-700">
-                        <div class="mb-4 sm:mb-0">
-                            <p class="text-slate-400 font-bold text-sm uppercase mb-1">Misi Kamu:</p>
-                            <p class="text-xl">Temukan file <span class="text-amber-400 font-black bg-slate-900 px-3 py-1 rounded-lg ml-2 border border-amber-500/50 shadow-inner">📄 ${targetData.target}</span></p>
+                    <div class="bg-slate-800 text-white p-6 rounded-2xl shadow-xl mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-4 border-slate-700 gap-4">
+                        <div class="flex-1">
+                            <p class="text-slate-400 font-bold text-sm uppercase mb-1">Target Misi Kamu:</p>
+                            <p class="text-xl mb-3">Temukan file <span class="text-amber-400 font-black bg-slate-900 px-3 py-1 rounded-lg ml-1 border border-amber-500/50 shadow-inner">📄 ${targetData.target}</span></p>
+                            <p class="text-xs text-slate-300 font-mono bg-slate-900 p-2 rounded-lg border border-slate-600 inline-block shadow-inner">
+                                <i class="fas fa-map-marker-alt text-emerald-400 mr-1"></i> Petunjuk Jalur: /Root/${targetData.path.join('/')}
+                            </p>
                         </div>
-                        <div class="bg-slate-900 p-3 rounded-xl border-2 border-slate-700 w-full sm:w-auto shadow-inner">
-                            <p class="text-slate-500 text-xs font-bold mb-1 uppercase">Path (Jalur) Saat Ini:</p>
-                            <p id="current-path" class="font-mono text-emerald-400 text-sm">/Root</p>
+                        <div class="bg-slate-900 p-3 rounded-xl border-2 border-slate-700 w-full sm:w-auto shadow-inner min-w-[200px]">
+                            <p class="text-slate-500 text-xs font-bold mb-1 uppercase">Posisi Kamu Saat Ini:</p>
+                            <p id="current-path-display" class="font-mono text-emerald-400 text-sm break-all">/Root</p>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="folder-grid">
+                    <!-- Tombol Kembali (Awalnya disembunyikan) -->
+                    <div class="mb-4 h-12 flex items-center">
+                        <button id="btn-back" class="hidden-el btn-3d bg-white hover:bg-slate-50 text-slate-700 px-5 py-3 rounded-xl font-bold border-2 border-slate-200 flex items-center shadow-sm transition-all" onclick="navigateUp()">
+                            <i class="fas fa-level-up-alt mr-2 text-indigo-500"></i> Naik 1 Folder (Kembali)
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="folder-grid">
                         <!-- Folders will be injected here -->
                     </div>
                 </div>
             `;
 
-            const structure = {
-                "Root": ["Dokumen", "Sistem", "Aplikasi"],
-                "Dokumen": ["Informatika", "Matematika", "B.Indonesia", "IPA", "Sejarah", "Bahasa", "Olahraga", "Prakarya"],
-                "Informatika": ["Tugas", "Materi"],
-                "Matematika": ["Tugas", "Materi"],
-                "B.Indonesia": ["Tugas"],
-                "IPA": ["Biologi", "Fisika"],
-                "Sejarah": ["Materi"],
-                "Bahasa": ["Tugas"],
-                "Olahraga": ["Video"],
-                "Prakarya": ["Tugas"],
-                "Tugas": ["Tugas-Tree.docx", "Puisi.txt", "Pidato.docx", "Kerajinan.jpg"],
-                "Materi": ["Rumus.pdf", "Revolusi.pdf"],
-                "Biologi": ["Bakteri.jpg"],
-                "Video": ["Senam.mp4"]
+            window.navigateUp = function() {
+                if (currentPath.length > 0) {
+                    currentPath.pop();
+                    renderFolderContent();
+                }
             };
 
-            function renderOptions(node) {
-                const grid = document.getElementById('folder-grid');
-                grid.innerHTML = '';
-                document.getElementById('current-path').innerText = '/Root' + (currentPath.length > 0 ? '/' + currentPath.join('/') : '');
-
-                let options = structure[node] || [];
-                if (node === "Tugas" || node === "Materi" || node === "Biologi" || node === "Video") {
-                    options = [targetData.target, "Data_Lain.txt"]; 
-                }
-
-                options.forEach(opt => {
-                    const isFile = opt.includes('.');
-                    const icon = isFile ? '📄' : '📁';
-                    const color = isFile ? 'text-blue-600 bg-blue-50 border-blue-200 hover:border-blue-400' : 'text-amber-600 bg-amber-50 border-amber-200 hover:border-amber-400';
-                    
-                    grid.innerHTML += `
-                        <button class="interactive-card ${color} border-2 p-5 rounded-2xl shadow-sm flex items-center w-full text-left bg-white" onclick="handleFolderClick('${opt}', ${isFile})">
-                            <span class="text-4xl mr-4 drop-shadow-sm">${icon}</span>
-                            <span class="text-xl font-bold text-slate-700">${opt}</span>
-                        </button>
-                    `;
-                });
-            }
-
-            window.handleFolderClick = function(opt, isFile) {
-                currentPath.push(opt);
-                
+            window.handleFSClick = function(itemName, isFile) {
                 if (isFile) {
-                    if (opt === targetData.target) {
+                    if (itemName === targetData.target) {
                         addXP(20);
                         awardBadge(BADGES.TREE);
                         showFeedback(true, `Sistem manajemen file dan folder di komputermu adalah salah satu contoh nyata penerapan struktur Tree!`, "File Ditemukan! 🎉", () => {
                             showNextButton();
                         });
                     } else {
-                        currentPath.pop(); 
-                        showFeedback(false, "Ini bukan file yang kita cari.");
+                        showFeedback(false, "Ini bukan file yang kita cari. Perhatikan petunjuk jalur di atas layar.");
                     }
                 } else {
-                    if (targetData.path.includes(opt)) {
-                        renderOptions(opt);
-                    } else {
-                        currentPath.pop();
-                        showFeedback(false, "Folder ini sepertinya tidak menyimpan file yang dituju. Coba folder lain.");
-                    }
+                    currentPath.push(itemName);
+                    renderFolderContent();
                 }
             };
 
-            renderOptions("Root");
+            function renderFolderContent() {
+                const grid = document.getElementById('folder-grid');
+                const btnBack = document.getElementById('btn-back');
+                const pathDisplay = document.getElementById('current-path-display');
+                
+                grid.innerHTML = '';
+                
+                // Update UI teks path
+                const pathString = '/Root' + (currentPath.length > 0 ? '/' + currentPath.join('/') : '');
+                pathDisplay.innerText = pathString;
+
+                // Atur visibilitas tombol kembali
+                if (currentPath.length > 0) {
+                    btnBack.classList.remove('hidden-el');
+                } else {
+                    btnBack.classList.add('hidden-el');
+                }
+
+                // Dapatkan isi direktori saat ini
+                let currentDir = fileSystem;
+                for (let dir of currentPath) {
+                    // Cek jika user memaksa masuk ke folder yang tidak ada di struktur
+                    if(!currentDir[dir]) return; 
+                    currentDir = currentDir[dir];
+                }
+
+                // Render isi (bisa berupa object/folder atau array/file)
+                let items = [];
+                if (Array.isArray(currentDir)) {
+                    // Ini berarti kita berada di dalam folder yang isinya langsung file
+                    items = currentDir.map(name => ({ name: name, isFile: true }));
+                } else {
+                    // Ini folder yang berisi subfolder
+                    items = Object.keys(currentDir).map(name => ({ name: name, isFile: false }));
+                }
+
+                // Render tombol untuk setiap item
+                items.forEach(item => {
+                    const icon = item.isFile ? '📄' : '📁';
+                    const color = item.isFile ? 'text-blue-600 bg-blue-50 border-blue-200 hover:border-blue-400 hover:bg-blue-100' : 'text-amber-600 bg-amber-50 border-amber-200 hover:border-amber-400 hover:bg-amber-100';
+                    
+                    grid.innerHTML += `
+                        <button class="interactive-card ${color} border-2 p-4 rounded-2xl shadow-sm flex items-center w-full text-left transition-all duration-200 group" onclick="handleFSClick('${item.name}', ${item.isFile})">
+                            <span class="text-4xl mr-4 drop-shadow-sm group-hover:scale-110 transition-transform">${icon}</span>
+                            <span class="text-lg font-bold truncate">${item.name}</span>
+                        </button>
+                    `;
+                });
+            }
+
+            // Mulai render dari Root
+            renderFolderContent();
         }
 
         // --- STREAMING_CHUNK:Level 4 Setup... ---
@@ -1248,10 +1303,18 @@
             
             function renderFMQuestion() {
                 if (window.fm_currentIndex >= fmData.length) {
+                    stopTimer();
                     awardBadge(BADGES.PROBLEM);
-                    showFeedback(true, "Kamu berhasil mengidentifikasi struktur data yang tepat untuk masalah-masalah tersebut!", "Problem Solver! 🧠", () => {
-                        changeState(GameState.FINAL_QUIZ);
-                    });
+                    container.innerHTML = `
+                        <div class="max-w-2xl mx-auto text-center slide-up mt-10 p-10 bg-white rounded-3xl shadow-xl border border-slate-100">
+                            <div class="text-7xl mb-6 pop">🧠</div>
+                            <h2 class="text-3xl font-black text-slate-800 mb-4">Misi Terakhir Selesai!</h2>
+                            <p class="text-lg text-slate-600 font-medium bg-slate-50 p-4 rounded-xl border border-slate-100 mb-8">Kamu berhasil mengidentifikasi struktur data yang tepat untuk masalah-masalah tersebut.</p>
+                            <button onclick="nextLevel()" class="btn-3d btn-secondary px-8 py-4 font-black text-xl rounded-full shadow-xl mx-auto flex items-center justify-center">
+                                LANJUT KE KUIS FINAL <i class="fas fa-pencil-alt ml-3"></i>
+                            </button>
+                        </div>
+                    `;
                     return;
                 }
 
@@ -1313,7 +1376,16 @@
             if (window.quiz_currentIndex >= window.quiz_data.length) {
                 stopTimer();
                 awardBadge(BADGES.MASTER);
-                setTimeout(() => changeState(GameState.RESULT), 500);
+                container.innerHTML = `
+                    <div class="max-w-3xl mx-auto text-center slide-up mt-10 p-10 bg-white rounded-3xl shadow-xl border border-slate-100">
+                        <div class="text-7xl mb-6 pop">🏁</div>
+                        <h2 class="text-4xl font-black text-slate-800 mb-4">Ujian Selesai!</h2>
+                        <p class="text-lg text-slate-600 font-medium bg-slate-50 p-4 rounded-xl border border-slate-100 mb-8">Selamat! Kamu telah menyelesaikan seluruh rangkaian misi dan kuis dengan sangat baik.</p>
+                        <button onclick="nextLevel()" class="btn-3d btn-primary px-10 py-5 font-black text-xl rounded-full shadow-xl mx-auto flex items-center justify-center">
+                            LIHAT HASIL AKHIR <i class="fas fa-trophy ml-3"></i>
+                        </button>
+                    </div>
+                `;
                 return;
             }
 
