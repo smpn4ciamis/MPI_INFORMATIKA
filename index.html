@@ -209,235 +209,8 @@
         const GameState = {
             HOME: 'HOME', BRIEFING: 'BRIEFING', LEVEL1: 'LEVEL1', LEVEL2: 'LEVEL2',
             LEVEL3: 'LEVEL3', LEVEL4: 'LEVEL4', LEVEL5: 'LEVEL5', LEVEL6: 'LEVEL6',
-            FINAL_MISSION: 'FINAL_MISSION', FINAL_QUIZ: 'FINAL_QUIZ', RESULT: 'RESULT'
-        };
-
-        // Data 8 Kelompok
-        const gameVariations = {
-            1: {
-                l1: [
-                    { text: "Struktur Organisasi OSIS", isData: true, desc: "Data bertingkat dari ketua hingga anggota." },
-                    { text: "Tumpukan baju kotor", isData: false, desc: "Tidak ada keteraturan yang jelas." },
-                    { text: "Peta Rute Angkot", isData: true, desc: "Menghubungkan berbagai titik lokasi." }
-                ],
-                l3: { target: "Tugas-Tree.docx", path: ["Dokumen", "Informatika", "Tugas", "Tugas-Tree.docx"] },
-                l5: [
-                    { path: "Rumah -> A -> Sekolah", dist: 15 },
-                    { path: "Rumah -> B -> C -> Sekolah", dist: 12 },
-                    { path: "Rumah -> D -> Sekolah", dist: 20 }
-                ],
-                l6: [
-                    { q: "Silsilah Keluarga (Kakek -> Ayah -> Anak)", a: 'TREE', exp: "Hubungan bertingkat/hierarki dari generasi ke generasi." },
-                    { q: "Jaringan Komputer di Lab", a: 'GRAPH', exp: "Komputer saling terhubung satu sama lain seperti jaring." }
-                ],
-                fm: [
-                    { q: "Jalur evakuasi pemadam kebakaran antar gedung", type: "GRAPH" },
-                    { q: "Struktur folder laporan keuangan tahunan", type: "TREE" }
-                ],
-                quiz: [
-                    { q: "Node yang tidak memiliki anak pada Tree disebut?", options: ["Root", "Edge", "Leaf", "Parent"], a: 2 },
-                    { q: "Manakah yang paling cocok menggunakan Graph?", options: ["Struktur Folder", "Peta Jalan", "Silsilah Keluarga", "Daftar Menu"], a: 1 },
-                    { q: "Simpul awal pada sebuah Tree disebut...", options: ["Root", "Branch", "Leaf", "Node"], a: 0 },
-                    { q: "Garis yang menghubungkan antar node pada Graph disebut...", options: ["Root", "Edge", "Leaf", "Parent"], a: 1 },
-                    { q: "Jika ada 4 kota saling terhubung, struktur apa yang pas?", options: ["Tree", "Graph", "Array", "Stack"], a: 1 }
-                ]
-            },
-            2: {
-                l1: [
-                    { text: "Jadwal Kereta Api", isData: true, desc: "Data terstruktur menghubungkan stasiun." },
-                    { text: "Catatan coretan di buku", isData: false, desc: "Sulit diidentifikasi polanya." },
-                    { text: "Struktur Folder Musik", isData: true, desc: "Data dikelompokkan dalam folder." }
-                ],
-                l3: { target: "Rumus.pdf", path: ["Dokumen", "Matematika", "Materi", "Rumus.pdf"] },
-                l5: [
-                    { path: "Stasiun -> Jalur 1 -> Terminal", dist: 10 },
-                    { path: "Stasiun -> Jalur 2 -> Pasar -> Terminal", dist: 8 },
-                    { path: "Stasiun -> Jalur 3 -> Terminal", dist: 15 }
-                ],
-                l6: [
-                    { q: "Peta Jalur Penerbangan Pesawat", a: 'GRAPH', exp: "Bandara-bandara saling terhubung oleh rute pesawat." },
-                    { q: "Daftar Menu Makanan Kategori", a: 'TREE', exp: "Kategori -> Subkategori -> Menu makanan." }
-                ],
-                fm: [
-                    { q: "Struktur kepanitiaan lomba 17 Agustus", type: "TREE" },
-                    { q: "Rute patroli keamanan keliling sekolah", type: "GRAPH" }
-                ],
-                quiz: [
-                    { q: "Struktur data untuk peta jalan antar kota adalah...", options: ["Tree", "Array", "Graph", "Queue"], a: 2 },
-                    { q: "Simpul yang berada di paling bawah Tree adalah...", options: ["Parent", "Root", "Edge", "Leaf"], a: 3 },
-                    { q: "Dalam Graph, kota diwakili oleh...", options: ["Edge", "Node", "Root", "Leaf"], a: 1 },
-                    { q: "Hubungan atasan dan bawahan menggunakan...", options: ["Graph", "Tree", "Edge", "Leaf"], a: 1 },
-                    { q: "Garis penghubung dalam Graph dinamakan...", options: ["Edge", "Line", "Root", "Node"], a: 0 }
-                ]
-            },
-            3: {
-                l1: [
-                    { text: "Daftar Belanja Acak", isData: false, desc: "Hanya list biasa tanpa struktur relasi." },
-                    { text: "Bagan Turnamen Bola", isData: true, desc: "Struktur hierarki eliminasi bertingkat." },
-                    { text: "Jaringan Pertemanan", isData: true, desc: "Relasi antar individu (Graph)." }
-                ],
-                l3: { target: "Puisi.txt", path: ["Dokumen", "B.Indonesia", "Tugas", "Puisi.txt"] },
-                l5: [
-                    { path: "Pintu Masuk -> Lorong A -> Kantin", dist: 25 },
-                    { path: "Pintu Masuk -> Lorong B -> Kantin", dist: 30 },
-                    { path: "Pintu Masuk -> Taman -> Lorong C -> Kantin", dist: 20 }
-                ],
-                l6: [
-                    { q: "Peta Jaringan Internet antar benua", a: 'GRAPH', exp: "Koneksi kabel fiber optik antar negara (Graph)." },
-                    { q: "Struktur Kategori Toko Online (Elektronik -> HP -> Merk)", a: 'TREE', exp: "Klasifikasi data bertingkat dari umum ke spesifik." }
-                ],
-                fm: [
-                    { q: "Jalur pipa air bersih ke seluruh ruangan", type: "GRAPH" },
-                    { q: "Silsilah kepemilikan yayasan sekolah", type: "TREE" }
-                ],
-                quiz: [
-                    { q: "Struktur data hierarkis (bertingkat) disebut...", options: ["Graph", "Array", "Tree", "Stack"], a: 2 },
-                    { q: "Jaringan sosial seperti Facebook dimodelkan dengan...", options: ["Tree", "Graph", "Queue", "List"], a: 1 },
-                    { q: "Simpul induk yang memiliki anak disebut...", options: ["Leaf", "Root", "Parent", "Edge"], a: 2 },
-                    { q: "Jalur yang menghubungkan 2 node pada Graph disebut...", options: ["Edge", "Branch", "Leaf", "Parent"], a: 0 },
-                    { q: "Mana yang BUKAN bagian dari Tree?", options: ["Root", "Edge (Jalur Graph)", "Leaf", "Parent"], a: 1 }
-                ]
-            },
-            4: {
-                l1: [
-                    { text: "Silsilah Kerajaan", isData: true, desc: "Hierarki silsilah dari raja ke keturunan." },
-                    { text: "Peta Pendakian Gunung", isData: true, desc: "Jalur yang menghubungkan pos-pos." },
-                    { text: "Kumpulan daun gugur", isData: false, desc: "Tidak ada pola terstruktur." }
-                ],
-                l3: { target: "Bakteri.jpg", path: ["Dokumen", "IPA", "Biologi", "Bakteri.jpg"] },
-                l5: [
-                    { path: "Basecamp -> Pos 1 -> Puncak", dist: 40 },
-                    { path: "Basecamp -> Pos 2 -> Pos 3 -> Puncak", dist: 35 },
-                    { path: "Basecamp -> Jalur Air -> Puncak", dist: 50 }
-                ],
-                l6: [
-                    { q: "Struktur Bab dan Sub-bab di Buku", a: 'TREE', exp: "Materi dipecah menjadi sub-bagian secara hierarki." },
-                    { q: "Rute Angkutan Umum di Kota", a: 'GRAPH', exp: "Titik-titik halte yang saling terhubung." }
-                ],
-                fm: [
-                    { q: "Peta lokasi letak CCTV sekolah", type: "GRAPH" },
-                    { q: "Struktur taksonomi hewan di lab biologi", type: "TREE" }
-                ],
-                quiz: [
-                    { q: "Peta rute bus kota paling tepat menggunakan struktur...", options: ["Tree", "Graph", "Stack", "Root"], a: 1 },
-                    { q: "Silsilah keluarga paling tepat menggunakan struktur...", options: ["Tree", "Graph", "Edge", "Leaf"], a: 0 },
-                    { q: "Node tunggal di puncak Tree disebut...", options: ["Leaf", "Parent", "Root", "Edge"], a: 2 },
-                    { q: "Node yang saling terhubung oleh Edge adalah komponen...", options: ["Tree", "Graph", "List", "Array"], a: 1 },
-                    { q: "Simpul tanpa keturunan/anak pada Tree adalah...", options: ["Root", "Parent", "Edge", "Leaf"], a: 3 }
-                ]
-            },
-            5: {
-                l1: [
-                    { text: "Struktur Kabinet Menteri", isData: true, desc: "Hierarki dari Presiden ke Menteri." },
-                    { text: "Peta Jalur KRL", isData: true, desc: "Stasiun-stasiun yang terhubung oleh rel." },
-                    { text: "Daftar tamu acak", isData: false, desc: "Tidak ada keterkaitan terstruktur." }
-                ],
-                l3: { target: "Revolusi.pdf", path: ["Dokumen", "Sejarah", "Materi", "Revolusi.pdf"] },
-                l5: [
-                    { path: "Halte A -> Halte B -> Stasiun", dist: 18 },
-                    { path: "Halte A -> Halte C -> Halte D -> Stasiun", dist: 14 },
-                    { path: "Halte A -> Jalur Cepat -> Stasiun", dist: 22 }
-                ],
-                l6: [
-                    { q: "Struktur Folder Email (Inbox -> Promo, Sosial)", a: 'TREE', exp: "Kategori bertingkat dari utama ke sub-kategori." },
-                    { q: "Peta persebaran BTS Tower Seluler", a: 'GRAPH', exp: "Koneksi jaringan antar menara sinyal (Graph)." }
-                ],
-                fm: [
-                    { q: "Jalur distribusi makanan katering ke kelas", type: "GRAPH" },
-                    { q: "Bagan pertandingan sistem gugur Class Meeting", type: "TREE" }
-                ],
-                quiz: [
-                    { q: "Jika kita memetakan rute paket pengiriman, kita gunakan...", options: ["Tree", "Graph", "Leaf", "Root"], a: 1 },
-                    { q: "Dalam Tree organisasi, Direktur berada di posisi...", options: ["Leaf", "Root", "Edge", "Parent"], a: 1 },
-                    { q: "Garis yang menghubungkan rumah dan sekolah di peta disebut...", options: ["Edge", "Node", "Root", "Leaf"], a: 0 },
-                    { q: "Yang BUKAN merupakan struktur data adalah...", options: ["Tree", "Graph", "Kertas Buram", "Array"], a: 2 },
-                    { q: "Data yang disusun berdasar tingkat atas-bawah disebut...", options: ["Graph", "Tree", "Network", "Edge"], a: 1 }
-                ]
-            },
-            6: {
-                l1: [
-                    { text: "Jaringan Listrik Rumah", isData: true, desc: "Kabel yang menghubungkan alat elektronik (Graph)." },
-                    { text: "Formasi Susunan Pemain", isData: false, desc: "Bukan struktur penyimpanan data komputer." },
-                    { text: "Klasifikasi Makhluk Hidup", isData: true, desc: "Pengelompokan Kingdom ke Spesies (Tree)." }
-                ],
-                l3: { target: "Pidato.docx", path: ["Dokumen", "Bahasa", "Tugas", "Pidato.docx"] },
-                l5: [
-                    { path: "PLN -> Gardu A -> Rumah", dist: 5 },
-                    { path: "PLN -> Gardu B -> Gardu C -> Rumah", dist: 3 },
-                    { path: "PLN -> Kabel Langsung -> Rumah", dist: 8 }
-                ],
-                l6: [
-                    { q: "Peta Koneksi Bluetooth antar HP", a: 'GRAPH', exp: "Perangkat terhubung secara acak membentuk jaring." },
-                    { q: "Struktur Karyawan Perusahaan", a: 'TREE', exp: "Terdapat hierarki dari atasan ke bawahan." }
-                ],
-                fm: [
-                    { q: "Desain jaringan WiFi sekolah di berbagai ruang", type: "GRAPH" },
-                    { q: "Daftar kategori peminjam buku di perpustakaan", type: "TREE" }
-                ],
-                quiz: [
-                    { q: "Sistem jaringan komputer paling baik dimodelkan dengan...", options: ["Tree", "Graph", "Array", "Stack"], a: 1 },
-                    { q: "Bagian dari Tree yang memiliki anak disebut...", options: ["Parent", "Leaf", "Root", "Edge"], a: 0 },
-                    { q: "Dalam Graph, setiap persimpangan jalan adalah sebuah...", options: ["Edge", "Node", "Root", "Leaf"], a: 1 },
-                    { q: "Sistem pengurutan folder di Windows menggunakan...", options: ["Graph", "Tree", "Edge", "Node"], a: 1 },
-                    { q: "Koneksi antar node dalam Graph disebut...", options: ["Node", "Edge", "Root", "Leaf"], a: 1 }
-                ]
-            },
-            7: {
-                l1: [
-                    { text: "Jalur Pelayaran Kapal", isData: true, desc: "Pelabuhan saling terhubung (Graph)." },
-                    { text: "Bagan Struktur RT", isData: true, desc: "Dari Ketua RT menurun ke warga (Tree)." },
-                    { text: "Kumpulan batu di jalan", isData: false, desc: "Tidak memiliki relasi." }
-                ],
-                l3: { target: "Senam.mp4", path: ["Dokumen", "Olahraga", "Video", "Senam.mp4"] },
-                l5: [
-                    { path: "Pelabuhan A -> Rute 1 -> Pelabuhan B", dist: 120 },
-                    { path: "Pelabuhan A -> Pulau X -> Pelabuhan B", dist: 90 },
-                    { path: "Pelabuhan A -> Rute 3 -> Pelabuhan B", dist: 150 }
-                ],
-                l6: [
-                    { q: "Jalur migrasi burung tahunan", a: 'GRAPH', exp: "Terdiri dari titik singgah dan lintasan." },
-                    { q: "Silsilah Raja Nusantara", a: 'TREE', exp: "Garis keturunan dari atas ke bawah (hierarki)." }
-                ],
-                fm: [
-                    { q: "Rute bus antar jemput siswa", type: "GRAPH" },
-                    { q: "Struktur kepanitiaan pentas seni sekolah", type: "TREE" }
-                ],
-                quiz: [
-                    { q: "Garis keturunan keluarga adalah contoh paling tepat dari...", options: ["Tree", "Graph", "List", "Node"], a: 0 },
-                    { q: "Di dalam Tree, elemen yang tidak bercabang lagi disebut...", options: ["Root", "Edge", "Leaf", "Parent"], a: 2 },
-                    { q: "Jalur kereta MRT di Jakarta direpresentasikan dengan...", options: ["Tree", "Graph", "Parent", "Leaf"], a: 1 },
-                    { q: "Simpul pada Graph disebut juga...", options: ["Edge", "Node", "Root", "Leaf"], a: 1 },
-                    { q: "Hubungan hierarki (atasan-bawahan) menggunakan...", options: ["Graph", "Tree", "Network", "Array"], a: 1 }
-                ]
-            },
-            8: {
-                l1: [
-                    { text: "Peta Konsep Pelajaran", isData: true, desc: "Topik besar memecah ke subtopik (Tree)." },
-                    { text: "Peta Sirkuit Balap", isData: true, desc: "Jalur balapan yang saling terhubung (Graph)." },
-                    { text: "Tulisan abstrak di dinding", isData: false, desc: "Bukan data terstruktur." }
-                ],
-                l3: { target: "Kerajinan.jpg", path: ["Dokumen", "Prakarya", "Tugas", "Kerajinan.jpg"] },
-                l5: [
-                    { path: "Start -> Tikungan 1 -> Finish", dist: 8 },
-                    { path: "Start -> Jalan Pintas -> Finish", dist: 5 },
-                    { path: "Start -> Tikungan 2 -> Tikungan 3 -> Finish", dist: 11 }
-                ],
-                l6: [
-                    { q: "Peta topologi jaringan Ring (melingkar)", a: 'GRAPH', exp: "Simpul terhubung membentuk cincin jaringan." },
-                    { q: "Kategori menu pada website (Beranda -> Profil)", a: 'TREE', exp: "Menu utama menurun ke sub-menu." }
-                ],
-                fm: [
-                    { q: "Pemetaan rute jalanan kompleks sekolah", type: "GRAPH" },
-                    { q: "Bagan pembagian divisi ekstrakurikuler", type: "TREE" }
-                ],
-                quiz: [
-                    { q: "Peta konsep yang bercabang ke subtopik menggunakan...", options: ["Graph", "Tree", "Node", "Edge"], a: 1 },
-                    { q: "Jalan yang menghubungkan antar gedung menggunakan...", options: ["Tree", "Graph", "Leaf", "Root"], a: 1 },
-                    { q: "Simpul utama di puncak peta konsep (Tree) adalah...", options: ["Parent", "Root", "Leaf", "Edge"], a: 1 },
-                    { q: "Garis penghubung di dalam struktur Graph adalah...", options: ["Node", "Edge", "Leaf", "Parent"], a: 1 },
-                    { q: "Struktur dengan ciri hubungan bertingkat adalah...", options: ["Graph", "Tree", "Array", "Stack"], a: 1 }
-                ]
-            }
+            FINAL_MISSION: 'FINAL_MISSION', FINAL_QUIZ: 'FINAL_QUIZ', RESULT: 'RESULT',
+            LEADERBOARD: 'LEADERBOARD'
         };
 
         const state = {
@@ -461,6 +234,122 @@
             timeLeft: 0, 
             timerInterval: null, 
             currentTimeoutCallback: null
+        };
+
+        // DATABASE SOAL UNTUK 8 KELOMPOK
+        const gameVariations = {
+            1: {
+                l1: [ {text: "Daftar Absensi", isData: true, desc: "Data terstruktur dalam baris dan kolom."}, {text: "Coretan Dinding", isData: false, desc: "Acak, tidak berpola."}, {text: "Struktur Organisasi", isData: true, desc: "Data dengan hierarki jelas."} ],
+                l3: { target: "Tugas-Tree.docx", path: ["Dokumen", "Informatika", "Tugas"] },
+                l5: [ {path: "Rumah -> A -> B -> Sekolah", dist: 12}, {path: "Rumah -> C -> Sekolah", dist: 8}, {path: "Rumah -> D -> E -> Sekolah", dist: 15} ],
+                l6: [ {q: "Struktur folder dalam laptopmu", a: "TREE", exp: "Folder memiliki hierarki/tingkatan (parent dan child)."}, {q: "Rute penerbangan antar negara", a: "GRAPH", exp: "Penerbangan menghubungkan banyak titik tanpa hierarki yang kaku."} ],
+                fm: [ {q: "Struktur kepengurusan OSIS dari Ketua hingga Seksi-seksi", type: "TREE"}, {q: "Jaringan jalan raya yang menghubungkan antar gedung di sekolah", type: "GRAPH"} ],
+                quiz: [
+                    {q: "Simpul paling atas dalam struktur Tree disebut...", options: ["Leaf", "Root", "Edge", "Parent"], a: 1},
+                    {q: "Jalur yang menghubungkan dua Node pada Graph disebut...", options: ["Edge", "Root", "Child", "Vertex"], a: 0},
+                    {q: "Manakah yang cocok menggunakan struktur Graph?", options: ["Silsilah Keluarga", "Struktur Organisasi", "Peta Navigasi (Maps)", "Daftar Isi Buku"], a: 2},
+                    {q: "Simpul yang tidak memiliki anak dalam Tree disebut...", options: ["Parent", "Root", "Edge", "Leaf"], a: 3},
+                    {q: "Apa fungsi utama struktur data?", options: ["Membuat komputer lambat", "Mengatur data agar mudah dikelola", "Menghapus virus", "Mengganti komponen hardware"], a: 1}
+                ]
+            },
+            2: {
+                l1: [ {text: "Silsilah Keluarga", isData: true, desc: "Data keturunan yang jelas."}, {text: "Tumpukan Sampah", isData: false, desc: "Tidak ada pola terstruktur."}, {text: "Peta Navigasi", isData: true, desc: "Hubungan antar lokasi yang jelas."} ],
+                l3: { target: "Bakteri.jpg", path: ["Dokumen", "IPA", "Biologi"] },
+                l5: [ {path: "Rumah -> X -> Y -> Sekolah", dist: 10}, {path: "Rumah -> Z -> Sekolah", dist: 14}, {path: "Rumah -> W -> Sekolah", dist: 7} ],
+                l6: [ {q: "Silsilah keturunan raja-raja", a: "TREE", exp: "Memiliki urutan keturunan (hierarki)."}, {q: "Jaringan pertemanan di media sosial", a: "GRAPH", exp: "Semua orang bisa terhubung dengan siapa saja (tidak ada root)."} ],
+                fm: [ {q: "Pembagian divisi lomba dari ketua panitia hingga anggota", type: "TREE"}, {q: "Jaringan kabel LAN antar komputer di laboratorium", type: "GRAPH"} ],
+                quiz: [
+                    {q: "Simpul yang memiliki cabang/anak di bawahnya disebut...", options: ["Parent", "Leaf", "Root", "Edge"], a: 0},
+                    {q: "Titik-titik lokasi dalam sebuah Graph disebut...", options: ["Edge", "Node", "Root", "Leaf"], a: 1},
+                    {q: "Manakah yang tepat menggunakan struktur Tree?", options: ["Jalur Kereta Api", "Silsilah Keluarga", "Jaringan Internet", "Peta Jalan Raya"], a: 1},
+                    {q: "Dalam Graph, tidak ada istilah...", options: ["Node", "Edge", "Root", "Jalur"], a: 2},
+                    {q: "Struktur data yang tidak memiliki hierarki adalah...", options: ["Tree", "Graph", "Binary Tree", "Folder"], a: 1}
+                ]
+            },
+            3: {
+                l1: [ {text: "Daftar Isi Buku", isData: true, desc: "Data hierarki bab dan subbab."}, {text: "Suara Bising", isData: false, desc: "Tidak ada struktur yang jelas."}, {text: "Jaringan Komputer", isData: true, desc: "Hubungan koneksi antar device."} ],
+                l3: { target: "Geometri.pdf", path: ["Dokumen", "Matematika", "Materi"] },
+                l5: [ {path: "Rumah -> P -> Q -> Sekolah", dist: 15}, {path: "Rumah -> R -> Sekolah", dist: 9}, {path: "Rumah -> S -> T -> Sekolah", dist: 11} ],
+                l6: [ {q: "Peta jaringan pipa air di sebuah kota", a: "GRAPH", exp: "Pipa saling terhubung satu sama lain membentuk jaring."}, {q: "Menu dropdown pada sebuah website", a: "TREE", exp: "Menu utama memiliki sub-menu di bawahnya."} ],
+                fm: [ {q: "Struktur bab, subbab, dan paragraf dalam buku pelajaran", type: "TREE"}, {q: "Peta rel kereta api yang menghubungkan antar stasiun", type: "GRAPH"} ],
+                quiz: [
+                    {q: "Manakah pernyataan yang benar tentang Tree?", options: ["Memiliki siklus/putaran", "Satu node bisa memiliki banyak parent", "Pasti memiliki Root", "Tidak memiliki edge"], a: 2},
+                    {q: "Bagian yang menghubungkan antar tempat di Google Maps diwakili oleh...", options: ["Node", "Root", "Edge", "Leaf"], a: 2},
+                    {q: "Manakah yang bukan komponen Tree?", options: ["Root", "Siklus (Cycle)", "Leaf", "Parent"], a: 1},
+                    {q: "Struktur yang cocok untuk merepresentasikan jadwal penerbangan adalah...", options: ["Tree", "Folder", "List", "Graph"], a: 3},
+                    {q: "Apa yang membuat data disebut terstruktur?", options: ["Tersimpan di flashdisk", "Ukurannya besar", "Memiliki pola dan aturan penyimpanan", "Hanya bisa dibuka oleh programmer"], a: 2}
+                ]
+            },
+            4: {
+                l1: [ {text: "Daftar Menu Restoran", isData: true, desc: "Kategori makanan dan minuman."}, {text: "Daun Gugur", isData: false, desc: "Tidak memiliki urutan."}, {text: "Rute Angkot", isData: true, desc: "Titik-titik yang terhubung."} ],
+                l3: { target: "Cerpen.docx", path: ["Dokumen", "B.Indonesia", "Tugas"] },
+                l5: [ {path: "Rumah -> M -> Sekolah", dist: 18}, {path: "Rumah -> N -> O -> Sekolah", dist: 12}, {path: "Rumah -> P -> Sekolah", dist: 20} ],
+                l6: [ {q: "Daftar turnamen sistem gugur (bracket)", a: "TREE", exp: "Memiliki hierarki dari finalis hingga juara (Root)."}, {q: "Topologi jaringan Mesh pada komputer", a: "GRAPH", exp: "Semua komputer terhubung tanpa pusat tunggal."} ],
+                fm: [ {q: "Sistem kategori pada toko online (Elektronik -> HP -> Aksesoris)", type: "TREE"}, {q: "Jalur pengiriman barang oleh kurir ekspedisi", type: "GRAPH"} ],
+                quiz: [
+                    {q: "Dalam struktur file, file docx yang berada di dalam folder bertindak sebagai...", options: ["Root", "Edge", "Leaf", "Graph"], a: 2},
+                    {q: "Ciri khas Graph dibandingkan Tree adalah...", options: ["Memiliki Root", "Memiliki tingkatan", "Bebas terhubung (bisa siklus)", "Hanya untuk angka"], a: 2},
+                    {q: "Untuk mencari rute terpendek, algoritma akan berjalan pada struktur data...", options: ["Tree", "Graph", "Queue", "Stack"], a: 1},
+                    {q: "Manakah yang disebut sebagai Child dalam struktur hierarki sekolah?", options: ["Kepala Sekolah", "Siswa terhadap Wali Kelas", "Gedung Sekolah", "Lapangan"], a: 1},
+                    {q: "Simpul awal tempat penelusuran dimulai pada Tree disebut...", options: ["Root", "Node Akhir", "Edge", "Parent"], a: 0}
+                ]
+            },
+            5: {
+                l1: [ {text: "Jadwal Pelajaran", isData: true, desc: "Data dengan matriks waktu dan hari."}, {text: "Angin Ribut", isData: false, desc: "Fenomena acak."}, {text: "Bagan Pertandingan", isData: true, desc: "Data hierarkis eliminasi."} ],
+                l3: { target: "Revolusi.pdf", path: ["Dokumen", "Sejarah", "Materi"] },
+                l5: [ {path: "Rumah -> H -> Sekolah", dist: 22}, {path: "Rumah -> I -> J -> Sekolah", dist: 16}, {path: "Rumah -> K -> L -> Sekolah", dist: 25} ],
+                l6: [ {q: "Skema klasifikasi makhluk hidup (Kingdom -> Filum -> Spesies)", a: "TREE", exp: "Tingkatannya berurutan dari umum ke khusus."}, {q: "Jaringan listrik PLN antar perumahan", a: "GRAPH", exp: "Saling menyilang dan terhubung."} ],
+                fm: [ {q: "Urutan jabatan dari Jenderal hingga Prajurit", type: "TREE"}, {q: "Peta stasiun MRT dan jalur persilangannya", type: "GRAPH"} ],
+                quiz: [
+                    {q: "Node yang tidak punya anak dinamakan...", options: ["Root", "Leaf", "Edge", "Branch"], a: 1},
+                    {q: "Hubungan dua kota di peta dihubungkan oleh...", options: ["Leaf", "Root", "Edge", "Parent"], a: 2},
+                    {q: "Bagan pertandingan piala dunia menggunakan struktur...", options: ["Graph", "Tree", "Array", "Database"], a: 1},
+                    {q: "Aplikasi yang sangat bergantung pada Graph adalah...", options: ["Google Maps", "Kalkulator", "Notepad", "Pemutar Musik"], a: 0},
+                    {q: "Manfaat struktur data adalah...", options: ["Memperberat komputer", "Pencarian lebih cepat dan rapi", "Menambah virus", "Mempersulit user"], a: 1}
+                ]
+            },
+            6: {
+                l1: [ {text: "Direktori File", isData: true, desc: "Hierarki folder dan file."}, {text: "Kertas Berserakan", isData: false, desc: "Kumpulan benda acak."}, {text: "Peta MRT", isData: true, desc: "Jalur yang terhubung antar stasiun."} ],
+                l3: { target: "Pidato.docx", path: ["Dokumen", "Bahasa", "Tugas"] },
+                l5: [ {path: "Rumah -> A1 -> Sekolah", dist: 19}, {path: "Rumah -> A2 -> A3 -> Sekolah", dist: 21}, {path: "Rumah -> A4 -> Sekolah", dist: 14} ],
+                l6: [ {q: "Struktur HTML pada sebuah halaman web", a: "TREE", exp: "Tag bersarang dari <html> hingga elemen terdalam."}, {q: "Koneksi kabel serat optik antar pulau", a: "GRAPH", exp: "Kabel saling menghubungkan pulau secara bebas."} ],
+                fm: [ {q: "Menu navigasi pada website sekolah", type: "TREE"}, {q: "Titik-titik hotspot WiFi dan jangkauannya", type: "GRAPH"} ],
+                quiz: [
+                    {q: "Dalam Tree, elemen atas yang memayungi anak disebut...", options: ["Leaf", "Child", "Parent", "Edge"], a: 2},
+                    {q: "Jarak atau bobot pada Graph biasanya menempel pada...", options: ["Node", "Edge", "Root", "Leaf"], a: 1},
+                    {q: "Graph dapat memiliki rute memutar (loop/siklus), sedangkan Tree...", options: ["Pasti memutar", "Tidak boleh memutar", "Kadang memutar", "Semuanya memutar"], a: 1},
+                    {q: "File Tugas.docx di dalam Folder Informatika adalah contoh dari...", options: ["Edge", "Root", "Parent", "Leaf"], a: 3},
+                    {q: "Jika data memiliki tingkat/kasta, struktur yang pas adalah...", options: ["Graph", "Tree", "Acak", "List"], a: 1}
+                ]
+            },
+            7: {
+                l1: [ {text: "Kategori E-commerce", isData: true, desc: "Barang diurutkan berjenjang."}, {text: "Batu di Sungai", isData: false, desc: "Acak."}, {text: "Jadwal Pesawat", isData: true, desc: "Koneksi penerbangan antar kota."} ],
+                l3: { target: "Senam.mp4", path: ["Dokumen", "Olahraga", "Video"] },
+                l5: [ {path: "Rumah -> B1 -> B2 -> Sekolah", dist: 17}, {path: "Rumah -> B3 -> Sekolah", dist: 13}, {path: "Rumah -> B4 -> Sekolah", dist: 22} ],
+                l6: [ {q: "Sistem pewarisan sifat dalam biologi (Genetika)", a: "TREE", exp: "Turun temurun tanpa menyilang secara acak."}, {q: "Rekomendasi teman di Facebook", a: "GRAPH", exp: "Orang A berteman dengan B, B berteman dengan C, dst."} ],
+                fm: [ {q: "Diagram pohon faktor dalam matematika", type: "TREE"}, {q: "Rantai pasokan barang dari pabrik, distributor, ke toko", type: "GRAPH"} ],
+                quiz: [
+                    {q: "Root terletak di bagian mana pada Tree?", options: ["Kanan", "Bawah", "Paling Atas", "Tengah"], a: 2},
+                    {q: "Sistem pertemanan (Mutual Friends) adalah contoh dari...", options: ["Tree", "Graph", "Folder", "Root"], a: 1},
+                    {q: "Pada Graph, Kota A dan Kota B disebut sebagai...", options: ["Node", "Edge", "Root", "Leaf"], a: 0},
+                    {q: "Dalam folder komputer, Partisi C:\\ adalah...", options: ["Leaf", "Edge", "Root", "Child"], a: 2},
+                    {q: "Mencari teman dari temannya teman adalah operasi penelusuran pada...", options: ["Tree", "Graph", "File", "Sistem"], a: 1}
+                ]
+            },
+            8: {
+                l1: [ {text: "Skema Jaringan Air", isData: true, desc: "Pipa yang saling terkoneksi."}, {text: "Pasir di Pantai", isData: false, desc: "Tidak ada pola keterhubungan."}, {text: "Urutan Jabatan", isData: true, desc: "Posisi dengan wewenang bertingkat."} ],
+                l3: { target: "Kerajinan.jpg", path: ["Dokumen", "Prakarya", "Tugas"] },
+                l5: [ {path: "Rumah -> C1 -> C2 -> Sekolah", dist: 28}, {path: "Rumah -> C3 -> Sekolah", dist: 30}, {path: "Rumah -> C4 -> C5 -> Sekolah", dist: 24} ],
+                l6: [ {q: "Struktur pengurus Rukun Tetangga (RT) dan warganya", a: "TREE", exp: "Ada ketua RT dan warga di bawahnya."}, {q: "Jalur pelayaran antar pelabuhan", a: "GRAPH", exp: "Kapal bergerak bebas antar titik labuh."} ],
+                fm: [ {q: "Hierarki izin akses folder administrator dan user", type: "TREE"}, {q: "Peta penyebaran sinyal menara telekomunikasi (BTS)", type: "GRAPH"} ],
+                quiz: [
+                    {q: "Garis yang menunjukkan hubungan ayah dan anak di silsilah keluarga berfungsi sebagai...", options: ["Node", "Edge", "Root", "Leaf"], a: 1},
+                    {q: "Struktur data manakah yang fokus pada rute/jalur?", options: ["Tree", "Graph", "Root", "Array"], a: 1},
+                    {q: "Manakah contoh Leaf pada organisasi perusahaan?", options: ["CEO", "Direktur", "Manager", "Staff Magang"], a: 3},
+                    {q: "Google Maps menggunakan struktur Graph karena...", options: ["Lebih keren", "Tidak butuh data", "Titik-titik kota saling terhubung rute/jalan", "Hanya satu jalur"], a: 2},
+                    {q: "Pemahaman struktur data membantu kita...", options: ["Merakit komputer", "Membuat masalah jadi lebih rumit", "Mengatur informasi agar solusi lebih cepat ditemukan", "Mendesain gambar"], a: 2}
+                ]
+            }
         };
 
         window.onload = function() {
@@ -689,6 +578,7 @@
                 case GameState.FINAL_MISSION: renderFinalMission(container); break;
                 case GameState.FINAL_QUIZ: renderFinalQuiz(container); break;
                 case GameState.RESULT: renderResult(container); break;
+                case GameState.LEADERBOARD: renderLeaderboard(container); break;
             }
         }
 
@@ -725,9 +615,14 @@
                         </div>
                     </div>
                     
-                    <button onclick="startGame()" class="btn-3d btn-primary text-xl font-black px-12 py-5 rounded-full w-full sm:w-auto relative z-10 flex justify-center items-center gap-3 mx-auto">
-                        <i class="fas fa-play text-2xl"></i> MULAI PETUALANGAN
-                    </button>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
+                        <button onclick="startGame()" class="btn-3d btn-primary text-xl font-black px-10 py-4 rounded-full w-full sm:w-auto flex justify-center items-center gap-3 shadow-lg">
+                            <i class="fas fa-play text-2xl"></i> MULAI PETUALANGAN
+                        </button>
+                        <button onclick="changeState(GameState.LEADERBOARD)" class="btn-3d bg-white text-indigo-600 border-2 border-indigo-200 hover:border-indigo-500 hover:bg-indigo-50 text-lg font-black px-8 py-4 rounded-full w-full sm:w-auto flex justify-center items-center gap-3 shadow-sm">
+                            <i class="fas fa-chart-bar text-xl"></i> KLASEMEN KELAS
+                        </button>
+                    </div>
                 </div>
             `;
         }
@@ -1388,6 +1283,16 @@
             const totalSoal = state.correctAnswers + state.wrongAnswers;
             const percent = totalSoal === 0 ? 0 : Math.round((state.correctAnswers / totalSoal) * 100); 
 
+            // Simpan skor ke LocalStorage untuk Klasemen Kelas
+            let allScores = JSON.parse(localStorage.getItem('dataQuestScores')) || {};
+            allScores[state.groupId] = {
+                name: state.playerName,
+                xp: state.xp,
+                percent: percent,
+                badges: state.badges.length
+            };
+            localStorage.setItem('dataQuestScores', JSON.stringify(allScores));
+
             let rank = "";
             if (percent >= 90) rank = "🏆 DATA MASTER";
             else if (percent >= 75) rank = "🥇 DATA EXPLORER";
@@ -1443,12 +1348,74 @@
                         Akurasi kamu adalah <strong>${percent}%</strong>. Semakin sering berlatih, insting berpikir komputasionalmu akan semakin tajam!
                     </p>
 
-                    <button onclick="resetGame()" class="btn-3d btn-primary px-10 py-5 text-xl font-black rounded-full w-full sm:w-auto shadow-2xl flex items-center justify-center gap-3 mx-auto">
-                        <i class="fas fa-home text-2xl"></i> KEMBALI KE MENU
-                    </button>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+                        <button onclick="changeState(GameState.LEADERBOARD)" class="btn-3d btn-secondary px-8 py-4 text-lg font-black rounded-full w-full sm:w-auto shadow-xl flex items-center justify-center gap-2">
+                            <i class="fas fa-chart-bar text-xl"></i> LIHAT KLASEMEN
+                        </button>
+                        <button onclick="resetGame()" class="btn-3d bg-slate-100 text-slate-700 hover:bg-slate-200 border-2 border-slate-300 px-8 py-4 text-lg font-black rounded-full w-full sm:w-auto shadow-sm flex items-center justify-center gap-2">
+                            <i class="fas fa-home text-xl"></i> MENU UTAMA
+                        </button>
+                    </div>
                 </div>
             `;
             container.innerHTML = html;
+        }
+
+        function renderLeaderboard(container) {
+            container.className = "min-h-screen pt-20 pb-20 px-4 sm:px-6 flex flex-col items-center justify-center bg-cyber";
+            
+            // Ambil data dari penyimpanan browser
+            let allScores = JSON.parse(localStorage.getItem('dataQuestScores')) || {};
+            
+            let chartHtml = '';
+            for (let i = 1; i <= 8; i++) {
+                const data = allScores[i];
+                const visualHeight = data ? Math.max(5, data.percent) : 0; // Minimal 5% agar sedikit terlihat jika skornya 0%
+                
+                chartHtml += `
+                    <div class="flex flex-col items-center justify-end w-full group relative">
+                        ${data ? `<div class="absolute -top-14 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs font-bold py-2 px-3 rounded-xl whitespace-nowrap z-10 pointer-events-none shadow-lg">
+                            ${data.name}<br><span class="text-amber-400">${data.xp} XP</span>
+                        </div>` : ''}
+                        
+                        <div class="w-full max-w-[3rem] bg-gradient-to-t from-indigo-600 to-indigo-400 rounded-t-xl transition-all duration-1000 flex flex-col justify-start items-center overflow-hidden shadow-lg border-t border-l border-r border-indigo-300 relative hover:brightness-110 cursor-pointer" 
+                             style="height: ${visualHeight}%; min-height: ${data ? '2rem' : '0.5rem'}; ${!data ? 'background: #e2e8f0; border-color: #cbd5e1;' : ''}">
+                             ${data ? `<span class="text-white font-black text-xs mt-3 -rotate-90 sm:rotate-0 drop-shadow-md">${data.percent}%</span>` : ''}
+                        </div>
+                        <div class="mt-4 text-center">
+                            <p class="font-black text-slate-700 text-sm">Klp ${i}</p>
+                            ${data ? `<p class="text-[0.65rem] font-bold text-slate-500 truncate w-12 mx-auto uppercase tracking-wider" title="${data.name}">${data.name}</p>` : `<p class="text-[0.65rem] font-bold text-slate-400">-</p>`}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="max-w-5xl mx-auto glass-panel p-6 sm:p-10 rounded-[3rem] shadow-2xl slide-up relative w-full border border-white/20">
+                    <div class="text-center mb-10">
+                        <span class="inline-block bg-indigo-100 text-indigo-800 font-black px-5 py-2 rounded-full mb-4 text-sm tracking-widest uppercase shadow-sm border border-indigo-200">Data Center</span>
+                        <h2 class="text-4xl sm:text-5xl font-black text-slate-800 mb-2">Papan Skor Kelas 📊</h2>
+                        <p class="text-slate-500 font-semibold text-lg">Perbandingan performa (Akurasi %) antar 8 kelompok.</p>
+                    </div>
+
+                    <div class="bg-white p-4 sm:p-8 rounded-3xl shadow-inner border-2 border-slate-100 mb-8 overflow-x-auto">
+                        <div class="flex items-end justify-between gap-2 sm:gap-4 h-64 sm:h-80 border-b-4 border-slate-200 pb-2 min-w-[500px]">
+                            ${chartHtml}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-6 bg-slate-50 p-6 rounded-3xl border-2 border-slate-100 shadow-sm">
+                        <button onclick="resetGame()" class="btn-3d btn-primary px-10 py-4 font-black text-lg rounded-full flex items-center justify-center gap-3 shadow-md w-full sm:w-auto">
+                            <i class="fas fa-home text-xl"></i> KEMBALI KE MENU
+                        </button>
+                        
+                        <button onclick="if(confirm('Apakah Bapak/Ibu guru yakin ingin menghapus semua data kelas ini untuk memulai sesi kelas baru?')) { localStorage.removeItem('dataQuestScores'); changeState(GameState.LEADERBOARD); }" 
+                                class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors font-bold text-sm px-5 py-3 flex items-center gap-2 border border-transparent hover:border-rose-200">
+                            <i class="fas fa-trash-alt"></i> Reset Data Kelas
+                        </button>
+                    </div>
+                </div>
+            `;
         }
     </script>
 </body>
